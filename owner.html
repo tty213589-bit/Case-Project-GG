@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LUCENT — Owner Profile</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800&family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#080b09;--moss:#102018;--panel:#15291d;--paper:#efe7d4;--dim:rgba(239,231,212,.62);--brass:#c99a4a;--halo:#f3d089;--line:rgba(239,231,212,.14)}
+*{box-sizing:border-box;margin:0;padding:0}html{scroll-behavior:smooth}body{min-height:100vh;background:radial-gradient(circle at 75% 25%,rgba(38,82,51,.34),transparent 40%),linear-gradient(145deg,#070a08,#102018 58%,#080b09);color:var(--paper);font-family:'Rajdhani',sans-serif;font-weight:500;letter-spacing:.015em;overflow-x:hidden}
+body:before{content:'';position:fixed;inset:0;pointer-events:none;background:repeating-linear-gradient(90deg,transparent 0 70px,rgba(201,154,74,.025) 71px 72px),repeating-linear-gradient(0deg,transparent 0 70px,rgba(201,154,74,.025) 71px 72px);mask-image:linear-gradient(to bottom,#000,transparent)}
+nav{height:86px;padding:0 clamp(22px,6vw,88px);display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line);position:relative;z-index:5}
+.brand{font-family:'Orbitron',sans-serif;font-weight:700;letter-spacing:.16em}.back{color:var(--halo);text-decoration:none;border:1px solid rgba(201,154,74,.45);padding:10px 15px;font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;transition:.3s}.back:hover{background:var(--brass);color:var(--ink)}
+main{width:min(1180px,calc(100% - 40px));margin:0 auto;padding:clamp(60px,10vw,130px) 0 90px;position:relative;z-index:2}
+.hero{display:grid;grid-template-columns:.8fr 1.2fr;gap:clamp(45px,8vw,120px);align-items:center}
+.identity{aspect-ratio:1;border:1px solid rgba(201,154,74,.45);position:relative;display:grid;place-items:center;background:radial-gradient(circle,rgba(243,208,137,.12),transparent 52%),rgba(16,32,24,.72);overflow:hidden}
+.identity:before,.identity:after{content:'';position:absolute;border:1px solid rgba(201,154,74,.2);border-radius:50%;width:68%;aspect-ratio:1;animation:pulse 5s ease-in-out infinite}.identity:after{width:92%;animation-delay:-2.5s}.monogram{width:42%;aspect-ratio:1;border:1px solid var(--brass);border-radius:50%;display:grid;place-items:center;font-family:'Orbitron',sans-serif;font-size:clamp(40px,7vw,76px);font-weight:800;color:var(--halo);box-shadow:0 0 55px rgba(201,154,74,.18),inset 0 0 35px rgba(201,154,74,.12);position:relative;z-index:2}
+.corner{position:absolute;width:26px;height:26px;border:1px solid var(--brass)}.tl{left:16px;top:16px;border-right:0;border-bottom:0}.br{right:16px;bottom:16px;border-left:0;border-top:0}
+.signal{font-family:'Share Tech Mono',monospace;color:var(--brass);font-size:11px;letter-spacing:.26em;text-transform:uppercase;margin-bottom:22px}.copy h1{font-family:'Orbitron',sans-serif;font-size:clamp(44px,7vw,92px);line-height:.98;letter-spacing:.035em;text-transform:uppercase;font-weight:700}.copy h1 span{display:block;color:var(--halo);text-shadow:0 0 28px rgba(243,208,137,.25)}.role{margin:25px 0 28px;font-family:'Share Tech Mono',monospace;color:var(--brass);letter-spacing:.13em;text-transform:uppercase}.bio{font-size:clamp(17px,2vw,21px);line-height:1.75;color:var(--dim);max-width:58ch}.bio strong{color:var(--paper);font-weight:600}
+.manifesto{margin-top:clamp(75px,11vw,140px);border-top:1px solid var(--line);padding-top:55px;display:grid;grid-template-columns:.8fr 1.2fr;gap:50px}.manifesto h2{font-family:'Orbitron',sans-serif;font-size:clamp(26px,4vw,46px);line-height:1.14;text-transform:uppercase}.manifesto p{font-size:18px;line-height:1.8;color:var(--dim)}
+.nodes{margin-top:55px;display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.node{border:1px solid var(--line);background:rgba(21,41,29,.62);padding:26px;min-height:165px;transition:.35s}.node:hover{border-color:var(--brass);transform:translateY(-5px)}.node b{font-family:'Share Tech Mono',monospace;color:var(--brass);font-size:11px;letter-spacing:.18em}.node h3{font-family:'Orbitron',sans-serif;margin:22px 0 10px;font-size:16px;text-transform:uppercase}.node p{color:var(--dim);line-height:1.55}
+footer{border-top:1px solid var(--line);padding:28px clamp(22px,6vw,88px);display:flex;justify-content:space-between;color:var(--dim);font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:.08em}
+@keyframes pulse{50%{transform:scale(1.08);opacity:.45}}@media(max-width:780px){.hero,.manifesto{grid-template-columns:1fr}.identity{max-width:480px;width:100%;margin:auto}.nodes{grid-template-columns:1fr}.copy{text-align:center}.bio{margin-inline:auto}footer{gap:15px;flex-direction:column}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<nav><div class="brand">LUCENT</div><a class="back" href="index.html">← Return to Sanctuary</a></nav>
+<main>
+<section class="hero">
+<div class="identity"><span class="corner tl"></span><span class="corner br"></span><div class="monogram">LO</div></div>
+<div class="copy">
+<div class="signal">Identity record · Founder 001</div>
+<h1>The Mind <span>Behind Lucent</span></h1>
+<div class="role">LUCENT Owner · Founder &amp; Creative Director</div>
+<p class="bio">The owner of LUCENT shapes a world where <strong>technology becomes collectible design</strong>. Every season is conceived as a complete atmosphere — pairing precision engineering with architecture, nature, material craft, and a story worth entering.</p>
+</div>
+</section>
+<section class="manifesto">
+<h2>Machines should feel unforgettable.</h2>
+<div><p>LUCENT was built around a simple conviction: performance hardware can carry emotion, identity, and cultural meaning. The owner guides the creative direction of every limited season, turning the computer case from a container into a designed object with its own world.</p></div>
+</section>
+<section class="nodes">
+<article class="node"><b>01 / VISION</b><h3>Technology with Soul</h3><p>Transform functional hardware into objects people remember, display, and keep.</p></article>
+<article class="node"><b>02 / METHOD</b><h3>Seasonal Worlds</h3><p>Each release receives its own materials, visual language, atmosphere, and narrative.</p></article>
+<article class="node"><b>03 / STANDARD</b><h3>Remarkable by Design</h3><p>No anonymous products — every detail must feel deliberate, rare, and unmistakably LUCENT.</p></article>
+</section>
+</main>
+<footer><span>LUCENT — Owner Profile</span><span>IDENTITY NODE · 001</span></footer>
+</body>
+</html>
