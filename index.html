@@ -218,6 +218,18 @@
   }
   .owner-portal h3{font-family:'Orbitron',sans-serif;font-size:clamp(28px,4vw,48px);line-height:1.08;text-transform:uppercase;letter-spacing:.06em;}
   .owner-portal p{max-width:32ch;color:var(--parchment-dim);line-height:1.7;font-size:16px;}
+  .owner-portal-video{
+    position:absolute; inset:0; width:100%; height:100%; object-fit:contain; object-position:center;
+    background:#000; z-index:-2; display:none; pointer-events:none;
+  }
+  .owner-portal.has-video{background:#000;}
+  .owner-portal.has-video .owner-portal-content{
+    width:100%; min-height:100%; align-content:end;
+    background:linear-gradient(to bottom,rgba(5,8,6,.1) 18%,rgba(5,8,6,.58) 58%,rgba(5,8,6,.94) 100%);
+  }
+  .owner-portal.has-video .owner-monogram{width:82px;height:82px;font-size:28px;}
+  .owner-portal.has-video h3{font-size:clamp(24px,3.2vw,38px);}
+  .owner-portal.has-video p{display:none;}
   .owner-enter{
     margin-top:8px;border:1px solid var(--brass);padding:12px 18px;color:var(--halo);
     font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:.18em;text-transform:uppercase;
@@ -388,7 +400,8 @@
           <div class="facet"><div class="facet-label">Edition</div><div class="facet-val">Season 01 of 08 — retired when Season 02 arrives</div></div>
         </div>
       </div>
-      <a class="detail-visual owner-portal" href="owner.html" aria-label="Open the LUCENT Owner Profile">
+      <a class="detail-visual owner-portal" id="ownerPortal" href="owner.html" aria-label="Open the LUCENT Owner Profile">
+        <video class="owner-portal-video" id="ownerPortalVideo" muted loop playsinline preload="metadata"></video>
         <span class="corner tl"></span><span class="corner br"></span>
         <div class="owner-portal-content">
           <span class="owner-signal">Identity node · 001</span>
@@ -425,7 +438,7 @@
     <p class="admin-note">
       Upload a product cutout and a background for any season slot — the banner picks it up immediately and folds it into the loop.
       Renders on a plain black background are auto-matted (background stripped) on upload.
-      Changes preview immediately. Select <strong>Save Changes</strong> to keep names, images, backgrounds, and product videos only on this browser. Nothing is sent to a server.
+      Changes preview immediately. Select <strong>Save Changes</strong> to keep names, images, backgrounds, product videos, and the Owner Portal 4K video only on this browser. Nothing is sent to a server.
     </p>
     <div class="admin-list" id="adminList"></div>
     <div class="admin-actions">
@@ -518,6 +531,8 @@
   const footTag = document.getElementById('footTag');
   const timelineTrack = document.getElementById('timelineTrack');
   const detailImg = document.getElementById('detailImg');
+  const ownerPortal = document.getElementById('ownerPortal');
+  const ownerPortalVideo = document.getElementById('ownerPortalVideo');
   const heroStage = document.getElementById('heroStage');
 
   const adminToggle = document.getElementById('adminToggle');
@@ -529,6 +544,8 @@
   const adminPreview = document.getElementById('adminPreview');
   const adminStatus = document.getElementById('adminStatus');
 
+  let ownerVideoFile = null;
+  let ownerVideoObjectUrl = null;
   const DB_NAME = 'lucent-admin';
   const DB_STORE = 'website';
   function openAdminDb(){
@@ -547,7 +564,13 @@
         request.onsuccess = () => resolve(request.result);
         request.onerror = () => reject(request.error);
       });
+      const savedOwnerVideo = await new Promise((resolve,reject)=>{
+        const request = db.transaction(DB_STORE).objectStore(DB_STORE).get('ownerPortalVideo');
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+      });
       db.close();
+      ownerVideoFile = savedOwnerVideo instanceof Blob ? savedOwnerVideo : null;
       if (Array.isArray(saved) && saved.length === seasons.length){
         saved.forEach((season,i)=> seasons[i] = Object.assign({ n:i+1, name:'', status:'locked', product:null, productType:'image', bg:null, bgType:'image' }, season));
       }
@@ -559,12 +582,30 @@
     const db = await openAdminDb();
     await new Promise((resolve,reject)=>{
       const transaction = db.transaction(DB_STORE, 'readwrite');
-      transaction.objectStore(DB_STORE).put(seasons, 'seasons');
+      const store = transaction.objectStore(DB_STORE);
+      store.put(seasons, 'seasons');
+      store.put(ownerVideoFile, 'ownerPortalVideo');
       transaction.oncomplete = resolve;
       transaction.onerror = () => reject(transaction.error);
       transaction.onabort = () => reject(transaction.error);
     });
     db.close();
+  }
+  function renderOwnerPortalVideo(){
+    if (ownerVideoObjectUrl){
+      URL.revokeObjectURL(ownerVideoObjectUrl);
+      ownerVideoObjectUrl = null;
+    }
+    ownerPortalVideo.pause();
+    ownerPortalVideo.removeAttribute('src');
+    ownerPortalVideo.style.display = 'none';
+    ownerPortal.classList.remove('has-video');
+    if (!ownerVideoFile) return;
+    ownerVideoObjectUrl = URL.createObjectURL(ownerVideoFile);
+    ownerPortalVideo.src = ownerVideoObjectUrl;
+    ownerPortalVideo.style.display = 'block';
+    ownerPortal.classList.add('has-video');
+    ownerPortalVideo.play().catch(()=>{});
   }
   function markUnsaved(){
     adminStatus.textContent = 'Unsaved changes — select Save Changes';
@@ -912,6 +953,16 @@
 
   function renderAdmin(){
     adminList.innerHTML = '';
+    const ownerRow = document.createElement('div');
+    ownerRow.className = 'admin-row';
+    ownerRow.innerHTML =
+      '<div class="admin-row-top"><span class="mono">OWNER PORTAL</span><span class="tag live">profile</span></div>' +
+      '<div class="admin-uploads"><label class="up-btn" data-role="owner-video-label">Owner 4K Video<input type="file" accept="video/*,.mp4,.webm,.mov,.m4v,.ogv" data-role="owner-video"></label></div>' +
+      '<div class="admin-thumbs"><div class="thumb"><span class="mono" style="display:grid;place-items:center;height:100%;font-size:9px;text-align:center">' +
+      (ownerVideoFile ? 'VIDEO SAVED<br>' + esc(ownerVideoFile.name || '4K VIDEO') : 'NO VIDEO') +
+      '</span></div></div>' +
+      '<button class="admin-clear" data-role="owner-clear">Clear Owner video</button>';
+    adminList.appendChild(ownerRow);
     seasons.forEach((s,i)=>{
       const row = document.createElement('div');
       row.className = 'admin-row';
@@ -952,6 +1003,20 @@
 
   adminList.addEventListener('change', async (e)=>{
     const t = e.target;
+    if (t.getAttribute('data-role') === 'owner-video' && t.files && t.files[0]){
+      const file = t.files[0];
+      const label = adminList.querySelector('label[data-role="owner-video-label"]');
+      label.classList.add('busy'); label.firstChild.textContent = 'Loading 4K video… ';
+      try{
+        ownerVideoFile = file;
+        renderOwnerPortalVideo();
+      } finally {
+        label.classList.remove('busy'); label.firstChild.textContent = 'Owner 4K Video ';
+      }
+      renderAdmin();
+      markUnsaved();
+      return;
+    }
     const i = parseInt(t.getAttribute('data-i'), 10);
     if (Number.isNaN(i)) return;
 
@@ -1006,6 +1071,13 @@
 
   adminList.addEventListener('click', (e)=>{
     const t = e.target;
+    if (t.getAttribute('data-role') === 'owner-clear'){
+      ownerVideoFile = null;
+      renderOwnerPortalVideo();
+      renderAdmin();
+      markUnsaved();
+      return;
+    }
     if (t.classList.contains('admin-clear')){
       const i = parseInt(t.getAttribute('data-i'), 10);
       seasons[i] = { n:i+1, name:'', status:'locked', product:null, productType:'image', bg:null, bgType:'image' };
@@ -1039,6 +1111,7 @@
   buildDots();
   renderTimeline();
   renderAdmin();
+  renderOwnerPortalVideo();
   renderActiveInstant();
   scheduleNext();
   tryPlayMusic();
