@@ -3,50 +3,95 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>LUCENT — Owner Profile</title>
+<meta name="theme-color" content="#07100b">
+<title>LUCENT — Owner Vision</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800&family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <style>
-:root{--ink:#080b09;--moss:#102018;--panel:#15291d;--paper:#efe7d4;--dim:rgba(239,231,212,.62);--brass:#c99a4a;--halo:#f3d089;--line:rgba(239,231,212,.14)}
-*{box-sizing:border-box;margin:0;padding:0}html{scroll-behavior:smooth}body{min-height:100vh;background:radial-gradient(circle at 75% 25%,rgba(38,82,51,.34),transparent 40%),linear-gradient(145deg,#070a08,#102018 58%,#080b09);color:var(--paper);font-family:'Rajdhani',sans-serif;font-weight:500;letter-spacing:.015em;overflow-x:hidden}
-body:before{content:'';position:fixed;inset:0;pointer-events:none;background:repeating-linear-gradient(90deg,transparent 0 70px,rgba(201,154,74,.025) 71px 72px),repeating-linear-gradient(0deg,transparent 0 70px,rgba(201,154,74,.025) 71px 72px);mask-image:linear-gradient(to bottom,#000,transparent)}
-nav{height:86px;padding:0 clamp(22px,6vw,88px);display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line);position:relative;z-index:5}
-.brand{font-family:'Orbitron',sans-serif;font-weight:700;letter-spacing:.16em}.back{color:var(--halo);text-decoration:none;border:1px solid rgba(201,154,74,.45);padding:10px 15px;font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;transition:.3s}.back:hover{background:var(--brass);color:var(--ink)}
-main{width:min(1180px,calc(100% - 40px));margin:0 auto;padding:clamp(60px,10vw,130px) 0 90px;position:relative;z-index:2}
-.hero{display:grid;grid-template-columns:.8fr 1.2fr;gap:clamp(45px,8vw,120px);align-items:center}
-.identity{aspect-ratio:1;border:1px solid rgba(201,154,74,.45);position:relative;display:grid;place-items:center;background:radial-gradient(circle,rgba(243,208,137,.12),transparent 52%),rgba(16,32,24,.72);overflow:hidden}
-.identity:before,.identity:after{content:'';position:absolute;border:1px solid rgba(201,154,74,.2);border-radius:50%;width:68%;aspect-ratio:1;animation:pulse 5s ease-in-out infinite}.identity:after{width:92%;animation-delay:-2.5s}.monogram{width:42%;aspect-ratio:1;border:1px solid var(--brass);border-radius:50%;display:grid;place-items:center;font-family:'Orbitron',sans-serif;font-size:clamp(40px,7vw,76px);font-weight:800;color:var(--halo);box-shadow:0 0 55px rgba(201,154,74,.18),inset 0 0 35px rgba(201,154,74,.12);position:relative;z-index:2}
-.corner{position:absolute;width:26px;height:26px;border:1px solid var(--brass)}.tl{left:16px;top:16px;border-right:0;border-bottom:0}.br{right:16px;bottom:16px;border-left:0;border-top:0}
-.signal{font-family:'Share Tech Mono',monospace;color:var(--brass);font-size:11px;letter-spacing:.26em;text-transform:uppercase;margin-bottom:22px}.copy h1{font-family:'Orbitron',sans-serif;font-size:clamp(44px,7vw,92px);line-height:.98;letter-spacing:.035em;text-transform:uppercase;font-weight:700}.copy h1 span{display:block;color:var(--halo);text-shadow:0 0 28px rgba(243,208,137,.25)}.role{margin:25px 0 28px;font-family:'Share Tech Mono',monospace;color:var(--brass);letter-spacing:.13em;text-transform:uppercase}.bio{font-size:clamp(17px,2vw,21px);line-height:1.75;color:var(--dim);max-width:58ch}.bio strong{color:var(--paper);font-weight:600}
-.manifesto{margin-top:clamp(75px,11vw,140px);border-top:1px solid var(--line);padding-top:55px;display:grid;grid-template-columns:.8fr 1.2fr;gap:50px}.manifesto h2{font-family:'Orbitron',sans-serif;font-size:clamp(26px,4vw,46px);line-height:1.14;text-transform:uppercase}.manifesto p{font-size:18px;line-height:1.8;color:var(--dim)}
-.nodes{margin-top:55px;display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.node{border:1px solid var(--line);background:rgba(21,41,29,.62);padding:26px;min-height:165px;transition:.35s}.node:hover{border-color:var(--brass);transform:translateY(-5px)}.node b{font-family:'Share Tech Mono',monospace;color:var(--brass);font-size:11px;letter-spacing:.18em}.node h3{font-family:'Orbitron',sans-serif;margin:22px 0 10px;font-size:16px;text-transform:uppercase}.node p{color:var(--dim);line-height:1.55}
-footer{border-top:1px solid var(--line);padding:28px clamp(22px,6vw,88px);display:flex;justify-content:space-between;color:var(--dim);font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:.08em}
-@keyframes pulse{50%{transform:scale(1.08);opacity:.45}}@media(max-width:780px){.hero,.manifesto{grid-template-columns:1fr}.identity{max-width:480px;width:100%;margin:auto}.nodes{grid-template-columns:1fr}.copy{text-align:center}.bio{margin-inline:auto}footer{gap:15px;flex-direction:column}}
-@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+:root{--ink:#050806;--deep:#08120c;--moss:#102018;--panel:#13271b;--paper:#f2ead8;--dim:rgba(242,234,216,.62);--brass:#c99a4a;--halo:#f6d58f;--line:rgba(242,234,216,.14);--ease:cubic-bezier(.22,.61,.36,1)}
+*{box-sizing:border-box;margin:0;padding:0}html{scroll-behavior:smooth}body{background:var(--ink);color:var(--paper);font-family:'Rajdhani',sans-serif;font-weight:500;letter-spacing:.015em;overflow-x:hidden}a{color:inherit}button{font:inherit}
+.topbar{position:absolute;z-index:20;top:0;left:0;right:0;height:86px;padding:0 clamp(22px,5vw,78px);display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(242,234,216,.12);background:linear-gradient(to bottom,rgba(5,8,6,.76),transparent)}
+.brand{font-family:'Orbitron',sans-serif;font-size:17px;font-weight:700;letter-spacing:.18em;text-decoration:none;text-shadow:0 0 24px rgba(246,213,143,.22)}
+.nav-actions{display:flex;gap:10px;align-items:center}.nav-btn{border:1px solid rgba(201,154,74,.52);background:rgba(5,8,6,.45);color:var(--halo);padding:10px 14px;text-decoration:none;font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;backdrop-filter:blur(10px);transition:.3s}.nav-btn:hover{background:var(--brass);color:var(--ink)}
+.video-hero{height:max(720px,100svh);min-height:660px;position:relative;display:flex;align-items:flex-end;overflow:hidden;background:radial-gradient(circle at 50% 44%,rgba(44,89,57,.55),transparent 42%),linear-gradient(145deg,#050806,#11261a 58%,#050806)}
+.hero-video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;object-position:center;background:#050806;display:none;z-index:1}
+.hero-fallback{position:absolute;inset:0;z-index:0;overflow:hidden}.hero-fallback:before{content:'';position:absolute;width:min(62vw,760px);aspect-ratio:1;border-radius:50%;border:1px solid rgba(201,154,74,.25);left:50%;top:48%;transform:translate(-50%,-50%);box-shadow:0 0 0 90px rgba(201,154,74,.035),0 0 0 180px rgba(201,154,74,.018);animation:breathe 6s ease-in-out infinite}.hero-fallback:after{content:'LO';position:absolute;left:50%;top:48%;transform:translate(-50%,-50%);font:800 clamp(74px,12vw,170px)/1 'Orbitron',sans-serif;color:rgba(246,213,143,.11);text-shadow:0 0 70px rgba(246,213,143,.12)}
+.video-hero:after{content:'';position:absolute;inset:0;z-index:3;pointer-events:none;background:linear-gradient(to bottom,rgba(5,8,6,.28) 0%,rgba(5,8,6,.06) 35%,rgba(5,8,6,.7) 76%,#050806 100%),linear-gradient(90deg,rgba(5,8,6,.58),transparent 45%,rgba(5,8,6,.18))}
+.scan-grid{position:absolute;inset:0;z-index:4;pointer-events:none;opacity:.25;background:repeating-linear-gradient(90deg,transparent 0 79px,rgba(201,154,74,.09) 80px 81px),repeating-linear-gradient(0deg,transparent 0 79px,rgba(201,154,74,.07) 80px 81px);mask-image:linear-gradient(to bottom,#000,transparent 72%)}
+.hero-content{position:relative;z-index:6;width:min(1500px,calc(100% - 44px));margin:0 auto;padding-bottom:clamp(70px,9vh,110px);display:grid;grid-template-columns:1.2fr .8fr;gap:50px;align-items:end}
+.hero-kicker,.section-kicker{font-family:'Share Tech Mono',monospace;color:var(--brass);font-size:11px;letter-spacing:.3em;text-transform:uppercase}.hero-title{margin-top:18px;font-family:'Orbitron',sans-serif;font-size:clamp(54px,9.4vw,148px);font-weight:700;line-height:.86;letter-spacing:.015em;text-transform:uppercase;text-shadow:0 14px 55px rgba(0,0,0,.78)}.hero-title span{display:block;color:var(--halo);text-shadow:0 0 32px rgba(246,213,143,.24),0 14px 55px rgba(0,0,0,.78)}
+.hero-side{border-left:1px solid rgba(201,154,74,.55);padding:8px 0 8px 28px}.hero-side p{color:var(--dim);font-size:18px;line-height:1.7;max-width:40ch}.hero-meta{display:flex;gap:12px;flex-wrap:wrap;margin-top:26px}.chip{border:1px solid var(--line);padding:9px 12px;font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:.14em;text-transform:uppercase;background:rgba(5,8,6,.45);backdrop-filter:blur(8px)}.chip.live{border-color:rgba(201,154,74,.58);color:var(--halo)}.scroll-mark{position:absolute;z-index:7;bottom:25px;left:50%;transform:translateX(-50%);font:10px 'Share Tech Mono',monospace;letter-spacing:.24em;color:var(--dim);text-transform:uppercase}.scroll-mark:after{content:'';display:block;width:1px;height:36px;background:linear-gradient(var(--brass),transparent);margin:12px auto 0;animation:scrollLine 1.8s ease-in-out infinite}
+.profile{background:radial-gradient(circle at 78% 18%,rgba(36,75,48,.25),transparent 38%),var(--deep);padding:clamp(90px,11vw,165px) 22px}.wrap{width:min(1220px,100%);margin:0 auto}.profile-grid{display:grid;grid-template-columns:.72fr 1.28fr;gap:clamp(55px,9vw,130px);align-items:center}
+.identity{aspect-ratio:1;border:1px solid rgba(201,154,74,.43);position:relative;display:grid;place-items:center;background:radial-gradient(circle,rgba(246,213,143,.11),transparent 52%),rgba(16,32,24,.62);overflow:hidden}.identity:before,.identity:after{content:'';position:absolute;border:1px solid rgba(201,154,74,.22);border-radius:50%;width:64%;aspect-ratio:1;animation:breathe 5s ease-in-out infinite}.identity:after{width:88%;animation-delay:-2.5s}.monogram{width:39%;aspect-ratio:1;border:1px solid var(--brass);border-radius:50%;display:grid;place-items:center;font-family:'Orbitron',sans-serif;font-size:clamp(36px,6vw,68px);font-weight:800;color:var(--halo);position:relative;z-index:2;box-shadow:0 0 50px rgba(201,154,74,.16),inset 0 0 28px rgba(201,154,74,.12)}.corner{position:absolute;width:26px;height:26px;border:1px solid var(--brass)}.tl{left:16px;top:16px;border-right:0;border-bottom:0}.br{right:16px;bottom:16px;border-left:0;border-top:0}
+.profile-copy h2{font-family:'Orbitron',sans-serif;font-size:clamp(42px,6.5vw,84px);line-height:.98;text-transform:uppercase;letter-spacing:.025em;margin:20px 0 22px}.profile-copy h2 span{display:block;color:var(--halo)}.role{font-family:'Share Tech Mono',monospace;color:var(--brass);letter-spacing:.13em;text-transform:uppercase;margin-bottom:26px}.bio{font-size:clamp(18px,2vw,22px);line-height:1.78;color:var(--dim);max-width:58ch}.bio strong{color:var(--paper)}
+.statement{padding:clamp(90px,11vw,150px) 22px;background:#07100b;border-top:1px solid var(--line)}.statement-grid{display:grid;grid-template-columns:.7fr 1.3fr;gap:clamp(45px,8vw,110px);align-items:start}.statement h2{font-family:'Orbitron',sans-serif;font-size:clamp(32px,4.8vw,62px);line-height:1.09;text-transform:uppercase}.statement h2 span{color:var(--halo)}.statement-copy>p{font-size:20px;line-height:1.82;color:var(--dim)}
+.nodes{margin-top:55px;display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.node{position:relative;overflow:hidden;border:1px solid var(--line);background:linear-gradient(145deg,rgba(21,41,29,.8),rgba(8,18,12,.75));padding:28px;min-height:190px;transition:.4s var(--ease)}.node:before{content:'';position:absolute;inset:auto -40% -75% 20%;aspect-ratio:1;border-radius:50%;background:radial-gradient(circle,rgba(201,154,74,.11),transparent 65%)}.node:hover{border-color:var(--brass);transform:translateY(-7px);box-shadow:0 24px 50px rgba(0,0,0,.28)}.node b{font:11px 'Share Tech Mono',monospace;color:var(--brass);letter-spacing:.18em}.node h3{font:600 17px 'Orbitron',sans-serif;margin:28px 0 12px;text-transform:uppercase;letter-spacing:.04em}.node p{color:var(--dim);line-height:1.62;font-size:16px}
+.signature{padding:90px 22px;background:radial-gradient(circle at 50% 100%,rgba(50,98,64,.25),transparent 55%),var(--ink);text-align:center;border-top:1px solid var(--line)}.signature p{font:10px 'Share Tech Mono',monospace;color:var(--brass);letter-spacing:.26em;text-transform:uppercase}.signature h2{font:700 clamp(34px,6vw,76px)/1.05 'Orbitron',sans-serif;text-transform:uppercase;margin:20px auto 28px;max-width:16ch}.cta{display:inline-block;border:1px solid var(--brass);padding:14px 20px;text-decoration:none;color:var(--halo);font:10px 'Share Tech Mono',monospace;letter-spacing:.16em;text-transform:uppercase;transition:.3s}.cta:hover{background:var(--brass);color:var(--ink)}
+footer{border-top:1px solid var(--line);padding:28px clamp(22px,5vw,78px);display:flex;justify-content:space-between;gap:18px;color:var(--dim);font:10px 'Share Tech Mono',monospace;letter-spacing:.1em;text-transform:uppercase;background:var(--ink)}
+@keyframes breathe{50%{transform:scale(1.06);opacity:.48}}@keyframes scrollLine{0%,100%{transform:scaleY(.35);transform-origin:top;opacity:.35}50%{transform:scaleY(1);opacity:1}}
+@media(max-width:850px){.hero-content,.profile-grid,.statement-grid{grid-template-columns:1fr}.hero-content{padding-bottom:90px}.hero-side{max-width:600px}.video-hero{min-height:760px}.nodes{grid-template-columns:1fr}.identity{max-width:480px;width:100%;margin:auto}.profile-copy{text-align:center}.bio{margin-inline:auto}.statement h2{text-align:center}.hero-title{font-size:clamp(48px,16vw,90px)}}
+@media(max-width:560px){.topbar{height:74px}.brand{font-size:14px}.nav-btn.sound{display:none}.video-hero{min-height:700px}.hero-content{width:calc(100% - 32px)}.hero-side{padding-left:18px}.hero-side p{font-size:16px}.profile,.statement{padding-inline:16px}footer{flex-direction:column}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
 </style>
 </head>
 <body>
-<nav><div class="brand">LUCENT</div><a class="back" href="index.html">← Return to Sanctuary</a></nav>
-<main>
-<section class="hero">
-<div class="identity"><span class="corner tl"></span><span class="corner br"></span><div class="monogram">LO</div></div>
-<div class="copy">
-<div class="signal">Identity record · Founder 001</div>
-<h1>The Mind <span>Behind Lucent</span></h1>
-<div class="role">LUCENT Owner · Founder &amp; Creative Director</div>
-<p class="bio">The owner of LUCENT shapes a world where <strong>technology becomes collectible design</strong>. Every season is conceived as a complete atmosphere — pairing precision engineering with architecture, nature, material craft, and a story worth entering.</p>
+<nav class="topbar"><a class="brand" href="index.html">LUCENT</a><div class="nav-actions"><button class="nav-btn sound" id="soundToggle" type="button">Sound Off</button><a class="nav-btn" href="index.html">← Return to Sanctuary</a></div></nav>
+<header class="video-hero" id="top">
+<div class="hero-fallback" id="heroFallback"></div>
+<video class="hero-video" id="ownerBannerVideo" muted loop playsinline preload="metadata"></video>
+<div class="scan-grid"></div>
+<div class="hero-content">
+<div><div class="hero-kicker">Owner vision · Future protocol 001</div><h1 class="hero-title">The Future <span>Is Lucent</span></h1></div>
+<div class="hero-side"><p>A cinematic identity for the mind shaping technology into collectible design — one limited world at a time.</p><div class="hero-meta"><span class="chip live">● Vision online</span><span class="chip">4K owner film</span><span class="chip">Season 01 / 08</span></div></div>
 </div>
-</section>
-<section class="manifesto">
-<h2>Machines should feel unforgettable.</h2>
-<div><p>LUCENT was built around a simple conviction: performance hardware can carry emotion, identity, and cultural meaning. The owner guides the creative direction of every limited season, turning the computer case from a container into a designed object with its own world.</p></div>
-</section>
-<section class="nodes">
+<div class="scroll-mark">Enter identity</div>
+</header>
+<main>
+<section class="profile" id="profile"><div class="wrap profile-grid">
+<div class="identity"><span class="corner tl"></span><span class="corner br"></span><div class="monogram">LO</div></div>
+<div class="profile-copy"><div class="section-kicker">Identity record · Founder 001</div><h2>The Mind <span>Behind Lucent</span></h2><div class="role">LUCENT Owner · Founder &amp; Creative Director</div><p class="bio">The owner of LUCENT shapes a world where <strong>technology becomes collectible design</strong>. Every season is conceived as a complete atmosphere — pairing precision engineering with architecture, nature, material craft, and a story worth entering.</p></div>
+</div></section>
+<section class="statement"><div class="wrap statement-grid">
+<h2>Machines should feel <span>unforgettable.</span></h2>
+<div class="statement-copy"><p>LUCENT was built around a simple conviction: performance hardware can carry emotion, identity, and cultural meaning. The owner guides every limited season, turning the computer case from a container into a designed object with its own world.</p>
+<div class="nodes">
 <article class="node"><b>01 / VISION</b><h3>Technology with Soul</h3><p>Transform functional hardware into objects people remember, display, and keep.</p></article>
 <article class="node"><b>02 / METHOD</b><h3>Seasonal Worlds</h3><p>Each release receives its own materials, visual language, atmosphere, and narrative.</p></article>
 <article class="node"><b>03 / STANDARD</b><h3>Remarkable by Design</h3><p>No anonymous products — every detail must feel deliberate, rare, and unmistakably LUCENT.</p></article>
-</section>
+</div></div>
+</div></section>
+<section class="signature"><p>Identity transmission complete</p><h2>Build what people cannot forget.</h2><a class="cta" href="index.html">Explore LUCENT Season 01 →</a></section>
 </main>
-<footer><span>LUCENT — Owner Profile</span><span>IDENTITY NODE · 001</span></footer>
+<footer><span>LUCENT — Owner Vision</span><span>Future protocol · 001</span></footer>
+<script>
+(function(){
+  const video=document.getElementById('ownerBannerVideo');
+  const fallback=document.getElementById('heroFallback');
+  const sound=document.getElementById('soundToggle');
+  let objectUrl=null;
+  function openDb(){return new Promise((resolve,reject)=>{const request=indexedDB.open('lucent-admin',1);request.onupgradeneeded=()=>request.result.createObjectStore('website');request.onsuccess=()=>resolve(request.result);request.onerror=()=>reject(request.error);});}
+  async function loadOwnerFilm(){
+    try{
+      const db=await openDb();
+      const file=await new Promise((resolve,reject)=>{const request=db.transaction('website').objectStore('website').get('ownerPortalVideo');request.onsuccess=()=>resolve(request.result);request.onerror=()=>reject(request.error);});
+      db.close();
+      if(!(file instanceof Blob))return;
+      objectUrl=URL.createObjectURL(file);
+      video.src=objectUrl;
+      video.style.display='block';
+      fallback.style.display='none';
+      video.play().catch(()=>{});
+    }catch(error){console.warn('Owner film could not be loaded.',error);}
+  }
+  sound.addEventListener('click',()=>{
+    if(!video.src)return;
+    video.muted=!video.muted;
+    sound.textContent=video.muted?'Sound Off':'Sound On';
+    if(video.paused)video.play().catch(()=>{});
+  });
+  window.addEventListener('pagehide',()=>{if(objectUrl)URL.revokeObjectURL(objectUrl);});
+  loadOwnerFilm();
+})();
+</script>
 </body>
 </html>
