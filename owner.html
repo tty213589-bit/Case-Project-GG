@@ -63,12 +63,16 @@ footer{border-top:1px solid var(--line);padding:28px clamp(22px,5vw,78px);displa
 <section class="signature"><p>Identity transmission complete</p><h2>Build what people cannot forget.</h2><a class="cta" href="index.html">Explore LUCENT Season 01 →</a></section>
 </main>
 <footer><span>LUCENT — Owner Vision</span><span>Future protocol · 001</span></footer>
-<script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script>
 (function(){
   const SUPABASE_URL='https://gxjadrzfordmhkhmonns.supabase.co';
   const SUPABASE_KEY='sb_publishable_09OanYPKw-TLk6qL13hPsg_Xavus4pm';
-  const cloud=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+  async function getPublishedConfig(){
+    const response=await fetch(SUPABASE_URL+'/rest/v1/site_config?id=eq.lucent-main&select=data',{headers:{apikey:SUPABASE_KEY}});
+    if(!response.ok)throw new Error('Could not load published Owner video');
+    const rows=await response.json();
+    return rows[0]||null;
+  }
   const video=document.getElementById('ownerBannerVideo');
   const fallback=document.getElementById('heroFallback');
   const sound=document.getElementById('soundToggle');
@@ -98,8 +102,7 @@ footer{border-top:1px solid var(--line);padding:28px clamp(22px,5vw,78px);displa
 
   async function loadOwnerFilm(){
     try{
-      const {data,error}=await cloud.from('site_config').select('data').eq('id','lucent-main').maybeSingle();
-      if(error)throw error;
+      const data=await getPublishedConfig();
       const url=data&&data.data&&data.data.ownerVideoUrl;
       if(showFilm(url))return;
     }catch(error){console.warn('Published Owner film could not be loaded.',error);}
