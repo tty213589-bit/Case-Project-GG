@@ -91,6 +91,18 @@
   }
   .stage-bg.active{ opacity:1; animation:kenburns 9s ease-in-out infinite alternate; }
   @keyframes kenburns{ from{ transform:scale(1.04); } to{ transform:scale(1.13); } }
+  .stage-bg-video{
+    position:absolute; inset:0; width:100%; height:100%; z-index:0;
+    object-fit:contain; object-position:center; background:#000;
+    display:none; opacity:0; transition:opacity 1.1s ease;
+  }
+  .stage-bg-video.active{display:block; opacity:1;}
+  .stage-bg-video-shade{
+    position:absolute; inset:0; z-index:1; pointer-events:none;
+    background:
+      radial-gradient(ellipse at 50% 62%, rgba(10,12,8,0) 0%, rgba(10,12,8,0.55) 58%, rgba(10,12,8,0.92) 100%),
+      linear-gradient(to bottom, rgba(10,12,8,0.55) 0%, rgba(10,12,8,0.05) 30%, rgba(10,12,8,0.15) 70%, rgba(10,12,8,0.9) 100%);
+  }
   .stage-bg::after{
     content:'';
     position:absolute; inset:0;
@@ -122,9 +134,11 @@
   }
   .stage-product-img{
     position:absolute; height:100%; max-width:92vw; width:auto; display:block; object-fit:contain;
+    object-position:center; transform-origin:center;
     filter:drop-shadow(0 40px 60px rgba(0,0,0,0.55)) drop-shadow(0 4px 18px rgba(0,0,0,0.4));
     opacity:1;
   }
+  #stageVideo{width:100%; height:100%; max-width:100%; object-fit:contain; object-position:center; background:transparent;}
   .stage-placeholder{
     position:absolute; display:none; flex-direction:column; align-items:center; gap:12px;
     color:var(--parchment-dim);
@@ -281,6 +295,8 @@
   <section class="hero" id="heroStage">
     <div class="stage-bg active" id="bgA"></div>
     <div class="stage-bg" id="bgB"></div>
+    <video class="stage-bg-video" id="stageBgVideo" muted loop playsinline preload="metadata"></video>
+    <div class="stage-bg-video-shade"></div>
     <div class="stage-halo"></div>
 
     <div class="stage-copy" id="stageCopy">
@@ -430,6 +446,7 @@
 
   // ---------- DOM refs ----------
   const bgLayers = [document.getElementById('bgA'), document.getElementById('bgB')];
+  const stageBgVideo = document.getElementById('stageBgVideo');
   const stageCopy = document.getElementById('stageCopy');
   const eyebrow = document.getElementById('eyebrow');
   const heroTitle = document.getElementById('heroTitle');
@@ -476,7 +493,7 @@
       });
       db.close();
       if (Array.isArray(saved) && saved.length === seasons.length){
-        saved.forEach((season,i)=> seasons[i] = Object.assign({ n:i+1, name:'', status:'locked', product:null, productType:'image', bg:null }, season));
+        saved.forEach((season,i)=> seasons[i] = Object.assign({ n:i+1, name:'', status:'locked', product:null, productType:'image', bg:null, bgType:'image' }, season));
       }
     } catch (error){
       console.warn('Saved LUCENT settings could not be loaded.', error);
@@ -506,7 +523,7 @@
     media.src = s.product;
     media.style.display = 'block';
     media.style.transition = animate ? 'transform ' + DUR + 'ms var(--ease), opacity ' + DUR + 'ms var(--ease)' : 'none';
-    media.style.transform = animate ? 'translateY(46vh) scale(1.1)' : 'translateY(0) scale(1)';
+    media.style.transform = animate ? 'translateY(46vh)' : 'translateY(0)';
     media.style.opacity = animate ? '0' : '1';
     if (media === stageVideo) stageVideo.play().catch(()=>{});
     if (animate){
@@ -565,6 +582,31 @@
     const front = bgLayers[frontIndex];
     front.style.backgroundImage = url ? "url('" + url + "')" : FALLBACK_GRADIENT;
   }
+  function showBackground(s, animate){
+    const isVideo = !!(s.bg && (s.bgType || '').startsWith('video'));
+    if (isVideo){
+      bgLayers.forEach(layer=>layer.classList.remove('active'));
+      stageBgVideo.pause();
+      if (stageBgVideo.src !== s.bg) stageBgVideo.src = s.bg;
+      stageBgVideo.style.display = 'block';
+      stageBgVideo.classList.add('active');
+      stageBgVideo.style.transition = animate ? 'opacity ' + DUR + 'ms ease' : 'none';
+      stageBgVideo.style.opacity = animate ? '0' : '1';
+      stageBgVideo.play().catch(()=>{});
+      if (animate){
+        void stageBgVideo.offsetHeight;
+        requestAnimationFrame(()=>{ stageBgVideo.style.opacity = '1'; });
+      }
+      return;
+    }
+    stageBgVideo.pause();
+    stageBgVideo.classList.remove('active');
+    stageBgVideo.style.display = 'none';
+    stageBgVideo.removeAttribute('src');
+    stageBgVideo.load();
+    if (animate) crossfadeBg(s.bg);
+    else setBgInstant(s.bg);
+  }
 
   // ---------- Title formatting ----------
   function titleMarkup(s){
@@ -584,7 +626,7 @@
     const prev = seasons[activeIndex];
     const next = seasons[index];
 
-    crossfadeBg(next.bg);
+    showBackground(next, true);
 
     stageCopy.style.opacity = '0';
     stageCopy.style.transform = 'translateY(-14px)';
@@ -592,7 +634,7 @@
     if (prev.product){
       const outgoing = (prev.productType || '').startsWith('video') ? stageVideo : stageProduct;
       outgoing.style.transition = 'transform ' + DUR + 'ms var(--ease), opacity ' + DUR + 'ms var(--ease)';
-      outgoing.style.transform = 'translateY(-46vh) scale(1.1)';
+      outgoing.style.transform = 'translateY(-46vh)';
       outgoing.style.opacity = '0';
     } else {
       stagePlaceholder.style.transition = 'transform ' + DUR + 'ms var(--ease), opacity ' + DUR + 'ms var(--ease)';
@@ -645,7 +687,7 @@
   // ---------- Instant re-render of whatever is currently active (for live admin edits) ----------
   function renderActiveInstant(){
     const s = seasons[activeIndex];
-    setBgInstant(s.bg);
+    showBackground(s, false);
     if (s.product){
       stagePlaceholder.style.display = 'none';
       showProductMedia(s, false);
@@ -822,11 +864,11 @@
         '<input type="text" class="admin-name" data-i="' + i + '" placeholder="Season name" value="' + esc(s.name) + '">' +
         '<div class="admin-uploads">' +
           '<label class="up-btn" data-role="product-label" data-i="' + i + '">Product / Video<input type="file" accept="image/*,video/*" data-role="product" data-i="' + i + '"></label>' +
-          '<label class="up-btn" data-role="bg-label" data-i="' + i + '">Background<input type="file" accept="image/*" data-role="bg" data-i="' + i + '"></label>' +
+          '<label class="up-btn" data-role="bg-label" data-i="' + i + '">Background / 4K Video<input type="file" accept="image/*,video/*" data-role="bg" data-i="' + i + '"></label>' +
         '</div>' +
         '<div class="admin-thumbs">' +
           '<div class="thumb" style="' + (s.product && !(s.productType || '').startsWith('video') ? "background-image:url('" + s.product + "')" : '') + '">' + ((s.productType || '').startsWith('video') ? '<span class="mono" style="display:grid;place-items:center;height:100%;font-size:10px">VIDEO</span>' : '') + '</div>' +
-          '<div class="thumb" style="' + (s.bg ? "background-image:url('" + s.bg + "')" : '') + '"></div>' +
+          '<div class="thumb" style="' + (s.bg && !(s.bgType || '').startsWith('video') ? "background-image:url('" + s.bg + "')" : '') + '">' + ((s.bgType || '').startsWith('video') ? '<span class="mono" style="display:grid;place-items:center;height:100%;font-size:9px;text-align:center">4K VIDEO BG</span>' : '') + '</div>' +
         '</div>' +
         '<button class="admin-clear" data-i="' + i + '">Clear slot</button>';
       adminList.appendChild(row);
@@ -888,9 +930,17 @@
     }
 
     if (t.getAttribute('data-role') === 'bg' && t.files && t.files[0]){
-      const raw = await readFileAsDataURL(t.files[0]);
-      seasons[i].bg = raw;
-      seasons[i].status = 'live';
+      const file = t.files[0];
+      const label = adminList.querySelector('label[data-role="bg-label"][data-i="' + i + '"]');
+      label.classList.add('busy'); label.firstChild.textContent = 'Loading 4K media… ';
+      try{
+        const raw = await readFileAsDataURL(file);
+        seasons[i].bg = raw;
+        seasons[i].bgType = file.type || (file.name.toLowerCase().match(/\.(mp4|webm|mov|m4v|ogv)$/) ? 'video/*' : 'image/*');
+        seasons[i].status = 'live';
+      } finally {
+        label.classList.remove('busy'); label.firstChild.textContent = 'Background / 4K Video ';
+      }
       if (i===activeIndex) renderActiveInstant();
       refreshAll();
       markUnsaved();
@@ -902,7 +952,7 @@
     const t = e.target;
     if (t.classList.contains('admin-clear')){
       const i = parseInt(t.getAttribute('data-i'), 10);
-      seasons[i] = { n:i+1, name:'', status:'locked', product:null, productType:'image', bg:null };
+      seasons[i] = { n:i+1, name:'', status:'locked', product:null, productType:'image', bg:null, bgType:'image' };
       if (i===activeIndex) renderActiveInstant();
       refreshAll();
       markUnsaved();
