@@ -826,6 +826,19 @@
     updateNav();
   }
 
+  adminList.addEventListener('input', (e)=>{
+    const t = e.target;
+    if (!t.classList.contains('admin-name')) return;
+    const i = parseInt(t.getAttribute('data-i'), 10);
+    if (Number.isNaN(i)) return;
+    seasons[i].name = t.value.slice(0,40);
+    if (seasons[i].product || seasons[i].bg) seasons[i].status = 'live';
+    if (i===activeIndex) renderActiveInstant();
+    renderTimeline();
+    updateNav();
+    markUnsaved();
+  });
+
   adminList.addEventListener('change', async (e)=>{
     const t = e.target;
     const i = parseInt(t.getAttribute('data-i'), 10);
