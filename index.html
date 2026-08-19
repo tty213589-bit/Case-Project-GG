@@ -385,7 +385,8 @@
 
   // Browsers that block audible autoplay will start it on the visitor's first interaction.
   ['pointerdown','keydown','touchstart'].forEach(eventName=>{
-    document.addEventListener(eventName, ()=>{
+    document.addEventListener(eventName, event=>{
+      if (musicToggle.contains(event.target)) return;
       if (backgroundMusic.paused) tryPlayMusic();
     }, {once:true, passive:true});
   });
