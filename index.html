@@ -121,7 +121,7 @@
     display:flex; align-items:center; justify-content:center;
   }
   .stage-product-img{
-    position:absolute; height:100%; width:auto; display:block;
+    position:absolute; height:100%; max-width:92vw; width:auto; display:block; object-fit:contain;
     filter:drop-shadow(0 40px 60px rgba(0,0,0,0.55)) drop-shadow(0 4px 18px rgba(0,0,0,0.4));
     opacity:1;
   }
@@ -233,6 +233,14 @@
   .thumb{ flex:1; height:56px; border:1px solid var(--line); background-size:cover; background-position:center; background-color:rgba(239,231,212,0.04); border-radius:2px; }
   .admin-clear{ background:none; border:none; color:var(--danger); font-size:11px; letter-spacing:0.06em; text-transform:uppercase; padding:0; opacity:0.75; }
   .admin-clear:hover{opacity:1;}
+  .admin-actions{ padding:14px 22px 18px; border-top:1px solid var(--line); background:var(--moss-900); }
+  .admin-action-row{ display:flex; gap:9px; }
+  .admin-save,.admin-preview{ flex:1; border:1px solid var(--brass); border-radius:2px; padding:11px 8px; font-size:11px; letter-spacing:.08em; text-transform:uppercase; }
+  .admin-save{ background:var(--brass); color:var(--moss-900); }
+  .admin-preview{ background:transparent; color:var(--parchment); }
+  .admin-save:disabled{ opacity:.55; cursor:wait; }
+  .admin-status{ min-height:16px; margin-top:9px; color:var(--parchment-dim); font-size:11px; text-align:center; }
+  .admin-status.saved{ color:var(--halo); }
 
   @media (max-width:860px){
     .detail-grid{grid-template-columns:1fr;}
@@ -282,6 +290,7 @@
 
     <div class="stage-product-stage">
       <img class="stage-product-img" id="stageProduct" alt="">
+      <video class="stage-product-img" id="stageVideo" muted loop playsinline controls style="display:none"></video>
       <div class="stage-placeholder" id="stagePlaceholder">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.1"><rect x="5" y="11" width="14" height="9" rx="1.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
         <span class="ph-num mono" id="phNum">SEASON 02</span>
@@ -344,13 +353,20 @@
     <p class="admin-note">
       Upload a product cutout and a background for any season slot — the banner picks it up immediately and folds it into the loop.
       Renders on a plain black background are auto-matted (background stripped) on upload.
-      This runs entirely in your browser for this preview: changes live for the current session only, nothing is sent to a server yet.
+      Changes preview immediately. Select <strong>Save Changes</strong> to keep names, images, backgrounds, and product videos only on this browser. Nothing is sent to a server.
     </p>
     <div class="admin-list" id="adminList"></div>
+    <div class="admin-actions">
+      <div class="admin-action-row">
+        <button class="admin-save" id="adminSave">Save Changes</button>
+        <button class="admin-preview" id="adminPreview">Preview Website</button>
+      </div>
+      <div class="admin-status" id="adminStatus" role="status" aria-live="polite">No unsaved changes</div>
+    </div>
   </aside>
 
 <script>
-(function(){
+(async function(){
   "use strict";
 
   const pad = n => String(n).padStart(2,'0');
@@ -418,6 +434,7 @@
   const eyebrow = document.getElementById('eyebrow');
   const heroTitle = document.getElementById('heroTitle');
   const stageProduct = document.getElementById('stageProduct');
+  const stageVideo = document.getElementById('stageVideo');
   const stagePlaceholder = document.getElementById('stagePlaceholder');
   const phNum = document.getElementById('phNum');
   const dotsWrap = document.getElementById('stageDots');
@@ -435,8 +452,73 @@
   const adminPanel = document.getElementById('adminPanel');
   const adminClose = document.getElementById('adminClose');
   const adminList = document.getElementById('adminList');
+  const adminSave = document.getElementById('adminSave');
+  const adminPreview = document.getElementById('adminPreview');
+  const adminStatus = document.getElementById('adminStatus');
 
-  detailImg.src = seasons[0].product;
+  const DB_NAME = 'lucent-admin';
+  const DB_STORE = 'website';
+  function openAdminDb(){
+    return new Promise((resolve,reject)=>{
+      const request = indexedDB.open(DB_NAME, 1);
+      request.onupgradeneeded = () => request.result.createObjectStore(DB_STORE);
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
+  }
+  async function loadSavedSeasons(){
+    try{
+      const db = await openAdminDb();
+      const saved = await new Promise((resolve,reject)=>{
+        const request = db.transaction(DB_STORE).objectStore(DB_STORE).get('seasons');
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+      });
+      db.close();
+      if (Array.isArray(saved) && saved.length === seasons.length){
+        saved.forEach((season,i)=> seasons[i] = Object.assign({ n:i+1, name:'', status:'locked', product:null, productType:'image', bg:null }, season));
+      }
+    } catch (error){
+      console.warn('Saved LUCENT settings could not be loaded.', error);
+    }
+  }
+  async function saveSeasons(){
+    const db = await openAdminDb();
+    await new Promise((resolve,reject)=>{
+      const transaction = db.transaction(DB_STORE, 'readwrite');
+      transaction.objectStore(DB_STORE).put(seasons, 'seasons');
+      transaction.oncomplete = resolve;
+      transaction.onerror = () => reject(transaction.error);
+      transaction.onabort = () => reject(transaction.error);
+    });
+    db.close();
+  }
+  function markUnsaved(){
+    adminStatus.textContent = 'Unsaved changes — select Save Changes';
+    adminStatus.classList.remove('saved');
+  }
+  function showProductMedia(s, animate){
+    stageProduct.style.display = 'none';
+    stageVideo.pause();
+    stageVideo.style.display = 'none';
+    if (!s.product) return false;
+    const media = (s.productType || '').startsWith('video') ? stageVideo : stageProduct;
+    media.src = s.product;
+    media.style.display = 'block';
+    media.style.transition = animate ? 'transform ' + DUR + 'ms var(--ease), opacity ' + DUR + 'ms var(--ease)' : 'none';
+    media.style.transform = animate ? 'translateY(46vh) scale(1.1)' : 'translateY(0) scale(1)';
+    media.style.opacity = animate ? '0' : '1';
+    if (media === stageVideo) stageVideo.play().catch(()=>{});
+    if (animate){
+      void media.offsetHeight;
+      requestAnimationFrame(()=>{ media.style.transform = 'translateY(0) scale(1)'; media.style.opacity = '1'; });
+    }
+    return true;
+  }
+
+  await loadSavedSeasons();
+
+  if (seasons[0].product && !(seasons[0].productType || '').startsWith('video')) detailImg.src = seasons[0].product;
 
   // ---------- Dots ----------
   function buildDots(){
@@ -508,9 +590,10 @@
     stageCopy.style.transform = 'translateY(-14px)';
 
     if (prev.product){
-      stageProduct.style.transition = 'transform ' + DUR + 'ms var(--ease), opacity ' + DUR + 'ms var(--ease)';
-      stageProduct.style.transform = 'translateY(-46vh) scale(1.1)';
-      stageProduct.style.opacity = '0';
+      const outgoing = (prev.productType || '').startsWith('video') ? stageVideo : stageProduct;
+      outgoing.style.transition = 'transform ' + DUR + 'ms var(--ease), opacity ' + DUR + 'ms var(--ease)';
+      outgoing.style.transform = 'translateY(-46vh) scale(1.1)';
+      outgoing.style.opacity = '0';
     } else {
       stagePlaceholder.style.transition = 'transform ' + DUR + 'ms var(--ease), opacity ' + DUR + 'ms var(--ease)';
       stagePlaceholder.style.opacity = '0';
@@ -526,19 +609,11 @@
 
     if (next.product){
       stagePlaceholder.style.display = 'none';
-      stageProduct.style.display = 'block';
-      stageProduct.src = next.product;
-      stageProduct.style.transition = 'none';
-      stageProduct.style.transform = 'translateY(46vh) scale(1.1)';
-      stageProduct.style.opacity = '0';
-      void stageProduct.offsetHeight;
-      stageProduct.style.transition = 'transform ' + DUR + 'ms var(--ease), opacity ' + DUR + 'ms var(--ease)';
-      requestAnimationFrame(()=>{
-        stageProduct.style.transform = 'translateY(0) scale(1)';
-        stageProduct.style.opacity = '1';
-      });
+      showProductMedia(next, true);
     } else {
       stageProduct.style.display = 'none';
+      stageVideo.pause();
+      stageVideo.style.display = 'none';
       stagePlaceholder.style.display = 'flex';
       phNum.textContent = 'SEASON ' + pad(next.n);
       stagePlaceholder.style.transition = 'none';
@@ -573,13 +648,11 @@
     setBgInstant(s.bg);
     if (s.product){
       stagePlaceholder.style.display = 'none';
-      stageProduct.style.display = 'block';
-      stageProduct.src = s.product;
-      stageProduct.style.transition = 'none';
-      stageProduct.style.transform = 'translateY(0) scale(1)';
-      stageProduct.style.opacity = '1';
+      showProductMedia(s, false);
     } else {
       stageProduct.style.display = 'none';
+      stageVideo.pause();
+      stageVideo.style.display = 'none';
       stagePlaceholder.style.display = 'flex';
       phNum.textContent = 'SEASON ' + pad(s.n);
       stagePlaceholder.style.transition = 'none';
@@ -735,11 +808,11 @@
         '<div class="admin-row-top"><span class="mono">SEASON ' + pad(s.n) + '</span><span class="tag ' + s.status + '">' + s.status + '</span></div>' +
         '<input type="text" class="admin-name" data-i="' + i + '" placeholder="Season name" value="' + esc(s.name) + '">' +
         '<div class="admin-uploads">' +
-          '<label class="up-btn" data-role="product-label" data-i="' + i + '">Product<input type="file" accept="image/*" data-role="product" data-i="' + i + '"></label>' +
+          '<label class="up-btn" data-role="product-label" data-i="' + i + '">Product / Video<input type="file" accept="image/*,video/*" data-role="product" data-i="' + i + '"></label>' +
           '<label class="up-btn" data-role="bg-label" data-i="' + i + '">Background<input type="file" accept="image/*" data-role="bg" data-i="' + i + '"></label>' +
         '</div>' +
         '<div class="admin-thumbs">' +
-          '<div class="thumb" style="' + (s.product ? "background-image:url('" + s.product + "')" : '') + '"></div>' +
+          '<div class="thumb" style="' + (s.product && !(s.productType || '').startsWith('video') ? "background-image:url('" + s.product + "')" : '') + '">' + ((s.productType || '').startsWith('video') ? '<span class="mono" style="display:grid;place-items:center;height:100%;font-size:10px">VIDEO</span>' : '') + '</div>' +
           '<div class="thumb" style="' + (s.bg ? "background-image:url('" + s.bg + "')" : '') + '"></div>' +
         '</div>' +
         '<button class="admin-clear" data-i="' + i + '">Clear slot</button>';
@@ -764,6 +837,7 @@
       if (i===activeIndex) renderActiveInstant();
       renderTimeline();
       updateNav();
+      markUnsaved();
       return;
     }
 
@@ -771,16 +845,19 @@
       const label = adminList.querySelector('label[data-role="product-label"][data-i="' + i + '"]');
       label.classList.add('busy'); label.firstChild.textContent = 'Processing… ';
       try{
-        const raw = await readFileAsDataURL(t.files[0]);
-        const matted = await matteIfNeeded(raw);
-        seasons[i].product = matted;
+        const file = t.files[0];
+        const raw = await readFileAsDataURL(file);
+        const media = file.type.startsWith('video/') ? raw : await matteIfNeeded(raw);
+        seasons[i].product = media;
+        seasons[i].productType = file.type || 'image/*';
         seasons[i].status = 'live';
-        if (i===0) detailImg.src = matted;
+        if (i===0 && !file.type.startsWith('video/')) detailImg.src = media;
       } finally {
-        label.classList.remove('busy'); label.firstChild.textContent = 'Product ';
+        label.classList.remove('busy'); label.firstChild.textContent = 'Product / Video ';
       }
       if (i===activeIndex) renderActiveInstant();
       refreshAll();
+      markUnsaved();
       return;
     }
 
@@ -790,6 +867,7 @@
       seasons[i].status = 'live';
       if (i===activeIndex) renderActiveInstant();
       refreshAll();
+      markUnsaved();
       return;
     }
   });
@@ -798,10 +876,31 @@
     const t = e.target;
     if (t.classList.contains('admin-clear')){
       const i = parseInt(t.getAttribute('data-i'), 10);
-      seasons[i] = { n:i+1, name:'', status:'locked', product:null, bg:null };
+      seasons[i] = { n:i+1, name:'', status:'locked', product:null, productType:'image', bg:null };
       if (i===activeIndex) renderActiveInstant();
       refreshAll();
+      markUnsaved();
     }
+  });
+
+  adminSave.addEventListener('click', async ()=>{
+    adminSave.disabled = true;
+    adminStatus.textContent = 'Saving to this browser…';
+    adminStatus.classList.remove('saved');
+    try{
+      await saveSeasons();
+      adminStatus.textContent = 'Saved on this browser';
+      adminStatus.classList.add('saved');
+    } catch (error){
+      console.error(error);
+      adminStatus.textContent = 'Could not save. Try a smaller video or free browser storage.';
+    } finally {
+      adminSave.disabled = false;
+    }
+  });
+  adminPreview.addEventListener('click', ()=>{
+    closeAdmin();
+    heroStage.scrollIntoView({ behavior:'smooth', block:'start' });
   });
 
   // ---------- Init ----------
