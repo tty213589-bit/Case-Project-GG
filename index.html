@@ -66,6 +66,17 @@
   }
   .admin-toggle svg{width:16px; height:16px;}
   .admin-toggle.spin svg{animation:spin 3s linear infinite;}
+  .music-toggle{
+    width:34px; height:34px; border-radius:50%;
+    border:1px solid currentColor; background:transparent; color:inherit;
+    display:flex; align-items:center; justify-content:center;
+    font-size:14px; line-height:1; transition:transform 0.3s var(--ease), background 0.3s ease;
+  }
+  .music-toggle:hover{transform:scale(1.06);}
+  .music-toggle.playing{background:rgba(255,255,255,0.14);}
+  .music-toggle .pause-icon{display:none; font-size:10px; letter-spacing:-2px; transform:translateX(-1px);}
+  .music-toggle.playing .music-icon{display:none;}
+  .music-toggle.playing .pause-icon{display:inline;}
   @keyframes spin{ to{ transform:rotate(360deg); } }
 
   /* ---------- HERO ---------- */
@@ -247,11 +258,16 @@
         <span class="bar"><span class="bar-fill" id="navBarFill"></span></span>
         <span id="navName">Sanctuary</span>
       </div>
+      <button class="music-toggle" id="musicToggle" aria-label="Play background music" title="Play background music">
+        <span class="music-icon" aria-hidden="true">♪</span><span class="pause-icon" aria-hidden="true">Ⅱ</span>
+      </button>
       <button class="admin-toggle" id="adminToggle" aria-label="Admin settings" title="Admin settings">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/><path d="M19.4 13a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V19a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H4a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H10a1.65 1.65 0 0 0 1-1.51V4a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V10a1.65 1.65 0 0 0 1.51 1H20a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg>
       </button>
     </div>
   </nav>
+
+  <audio id="backgroundMusic" src="background-music.m4a" preload="auto" loop playsinline></audio>
 
   <!-- ================= HERO (autoplay carousel) ================= -->
   <section class="hero" id="heroStage">
@@ -342,6 +358,37 @@
   const FALLBACK_GRADIENT = "linear-gradient(160deg, #1b2f20 0%, #0a0c08 78%)";
   const CYCLE_MS = 6500;
   const DUR = 900;
+
+  // ---------- Background music ----------
+  const backgroundMusic = document.getElementById('backgroundMusic');
+  const musicToggle = document.getElementById('musicToggle');
+  backgroundMusic.volume = 0.35;
+
+  function updateMusicButton(){
+    const playing = !backgroundMusic.paused;
+    musicToggle.classList.toggle('playing', playing);
+    musicToggle.setAttribute('aria-label', playing ? 'Pause background music' : 'Play background music');
+    musicToggle.title = playing ? 'Pause background music' : 'Play background music';
+  }
+
+  function tryPlayMusic(){
+    const attempt = backgroundMusic.play();
+    if (attempt && typeof attempt.catch === 'function') attempt.catch(()=>{});
+  }
+
+  musicToggle.addEventListener('click', ()=>{
+    if (backgroundMusic.paused) tryPlayMusic();
+    else backgroundMusic.pause();
+  });
+  backgroundMusic.addEventListener('play', updateMusicButton);
+  backgroundMusic.addEventListener('pause', updateMusicButton);
+
+  // Browsers that block audible autoplay will start it on the visitor's first interaction.
+  ['pointerdown','keydown','touchstart'].forEach(eventName=>{
+    document.addEventListener(eventName, ()=>{
+      if (backgroundMusic.paused) tryPlayMusic();
+    }, {once:true, passive:true});
+  });
 
   function esc(s){
     return (s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -762,6 +809,7 @@
   renderAdmin();
   renderActiveInstant();
   scheduleNext();
+  tryPlayMusic();
 })();
 </script>
 </body>
