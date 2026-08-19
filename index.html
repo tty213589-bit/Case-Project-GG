@@ -438,18 +438,19 @@
     <p class="admin-note">
       Upload a product cutout and a background for any season slot — the banner picks it up immediately and folds it into the loop.
       Renders on a plain black background are auto-matted (background stripped) on upload.
-      Changes preview immediately. Select <strong>Save Changes</strong> to keep names, images, backgrounds, product videos, and the Owner Portal 4K video only on this browser. Nothing is sent to a server.
+      Changes preview immediately. Select <strong>Save Changes</strong> to publish names, images, backgrounds, product videos, and the Owner Portal 4K video for every visitor. Owner authentication is required before publishing.
     </p>
     <div class="admin-list" id="adminList"></div>
     <div class="admin-actions">
       <div class="admin-action-row">
-        <button class="admin-save" id="adminSave">Save Changes</button>
+        <button class="admin-save" id="adminSave">Save &amp; Publish</button>
         <button class="admin-preview" id="adminPreview">Preview Website</button>
       </div>
       <div class="admin-status" id="adminStatus" role="status" aria-live="polite">No unsaved changes</div>
     </div>
   </aside>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 (async function(){
   "use strict";
@@ -545,9 +546,17 @@
   const adminStatus = document.getElementById('adminStatus');
 
   let ownerVideoFile = null;
+  let ownerVideoUrl = null;
   let ownerVideoObjectUrl = null;
+  const SUPABASE_URL = 'https://gxjadrzfordmhkhmonns.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_09OanYPKw-TLk6qL13hPsg_Xavus4pm';
+  const OWNER_EMAIL = 'tty213589@gmail.com';
+  const cloud = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+    auth:{persistSession:true,detectSessionInUrl:true,autoRefreshToken:true}
+  });
   const DB_NAME = 'lucent-admin';
   const DB_STORE = 'website';
+
   function openAdminDb(){
     return new Promise((resolve,reject)=>{
       const request = indexedDB.open(DB_NAME, 1);
@@ -556,11 +565,13 @@
       request.onerror = () => reject(request.error);
     });
   }
-  async function loadSavedSeasons(){
+
+  async function loadLocalBackup(){
     try{
       const db = await openAdminDb();
+      const store = db.transaction(DB_STORE).objectStore(DB_STORE);
       const saved = await new Promise((resolve,reject)=>{
-        const request = db.transaction(DB_STORE).objectStore(DB_STORE).get('seasons');
+        const request = store.get('seasons');
         request.onsuccess = () => resolve(request.result);
         request.onerror = () => reject(request.error);
       });
@@ -572,25 +583,98 @@
       db.close();
       ownerVideoFile = savedOwnerVideo instanceof Blob ? savedOwnerVideo : null;
       if (Array.isArray(saved) && saved.length === seasons.length){
-        saved.forEach((season,i)=> seasons[i] = Object.assign({ n:i+1, name:'', status:'locked', product:null, productType:'image', bg:null, bgType:'image' }, season));
+        saved.forEach((season,i)=> seasons[i] = Object.assign({n:i+1,name:'',status:'locked',product:null,productType:'image',bg:null,bgType:'image'},season));
       }
-    } catch (error){
-      console.warn('Saved LUCENT settings could not be loaded.', error);
+    } catch(error){
+      console.warn('Local LUCENT backup could not be loaded.',error);
     }
   }
-  async function saveSeasons(){
+
+  async function saveLocalBackup(){
     const db = await openAdminDb();
     await new Promise((resolve,reject)=>{
-      const transaction = db.transaction(DB_STORE, 'readwrite');
+      const transaction = db.transaction(DB_STORE,'readwrite');
       const store = transaction.objectStore(DB_STORE);
-      store.put(seasons, 'seasons');
-      store.put(ownerVideoFile, 'ownerPortalVideo');
+      store.put(seasons,'seasons');
+      store.put(ownerVideoFile,'ownerPortalVideo');
       transaction.oncomplete = resolve;
       transaction.onerror = () => reject(transaction.error);
       transaction.onabort = () => reject(transaction.error);
     });
     db.close();
   }
+
+  async function loadSavedSeasons(){
+    try{
+      const {data,error} = await cloud.from('site_config').select('data').eq('id','lucent-main').maybeSingle();
+      if (error) throw error;
+      const published = data && data.data;
+      if (published && Array.isArray(published.seasons) && published.seasons.length === seasons.length){
+        published.seasons.forEach((season,i)=> seasons[i] = Object.assign({n:i+1,name:'',status:'locked',product:null,productType:'image',bg:null,bgType:'image'},season));
+        ownerVideoUrl = published.ownerVideoUrl || null;
+        return;
+      }
+    } catch(error){
+      console.warn('Published LUCENT content could not be loaded; using local backup.',error);
+    }
+    await loadLocalBackup();
+  }
+
+  async function ensureOwnerSession(){
+    const {data:{session}} = await cloud.auth.getSession();
+    if (session && session.user && session.user.email === OWNER_EMAIL) return session;
+    const {error} = await cloud.auth.signInWithOtp({
+      email:OWNER_EMAIL,
+      options:{emailRedirectTo:location.href.split('#')[0]}
+    });
+    if (error) throw error;
+    const sent = new Error('OWNER_LINK_SENT');
+    sent.code = 'OWNER_LINK_SENT';
+    throw sent;
+  }
+
+  function extFor(type,name){
+    const fromName = (name||'').toLowerCase().match(/.([a-z0-9]{2,5})$/);
+    if (fromName) return fromName[1] === 'jpeg' ? 'jpg' : fromName[1];
+    const map={'image/jpeg':'jpg','image/png':'png','image/webp':'webp','image/gif':'gif','video/mp4':'mp4','video/webm':'webm','video/quicktime':'mov','video/x-m4v':'m4v'};
+    return map[type] || (type&&type.startsWith('video/') ? 'mp4' : 'png');
+  }
+
+  async function uploadMedia(path,blob){
+    const {error} = await cloud.storage.from('lucent-media').upload(path,blob,{upsert:true,contentType:blob.type||undefined,cacheControl:'3600'});
+    if (error) throw error;
+    return cloud.storage.from('lucent-media').getPublicUrl(path).data.publicUrl + '?v=' + Date.now();
+  }
+
+  async function publishToCloud(){
+    await ensureOwnerSession();
+    const publishedSeasons = [];
+    for (let i=0;i<seasons.length;i++){
+      const source = seasons[i];
+      const published = Object.assign({},source);
+      if (typeof source.product === 'string' && source.product.startsWith('data:')){
+        const blob = await fetch(source.product).then(r=>r.blob());
+        published.product = await uploadMedia('seasons/' + pad(i+1) + '-product.' + extFor(blob.type),blob);
+      }
+      if (typeof source.bg === 'string' && source.bg.startsWith('data:')){
+        const blob = await fetch(source.bg).then(r=>r.blob());
+        published.bg = await uploadMedia('seasons/' + pad(i+1) + '-background.' + extFor(blob.type),blob);
+      }
+      publishedSeasons.push(published);
+    }
+    if (ownerVideoFile){
+      ownerVideoUrl = await uploadMedia('owner/portal.' + extFor(ownerVideoFile.type,ownerVideoFile.name),ownerVideoFile);
+    }
+    const payload={seasons:publishedSeasons,ownerVideoUrl:ownerVideoUrl||null,publishedAt:new Date().toISOString()};
+    const {error} = await cloud.from('site_config').upsert({id:'lucent-main',data:payload,updated_at:new Date().toISOString()});
+    if (error) throw error;
+    publishedSeasons.forEach((season,i)=>seasons[i]=season);
+    ownerVideoFile = null;
+    await saveLocalBackup();
+    renderOwnerPortalVideo();
+    renderAdmin();
+  }
+
   function renderOwnerPortalVideo(){
     if (ownerVideoObjectUrl){
       URL.revokeObjectURL(ownerVideoObjectUrl);
@@ -600,9 +684,13 @@
     ownerPortalVideo.removeAttribute('src');
     ownerPortalVideo.style.display = 'none';
     ownerPortal.classList.remove('has-video');
-    if (!ownerVideoFile) return;
-    ownerVideoObjectUrl = URL.createObjectURL(ownerVideoFile);
-    ownerPortalVideo.src = ownerVideoObjectUrl;
+    let source = ownerVideoUrl;
+    if (ownerVideoFile){
+      ownerVideoObjectUrl = URL.createObjectURL(ownerVideoFile);
+      source = ownerVideoObjectUrl;
+    }
+    if (!source) return;
+    ownerPortalVideo.src = source;
     ownerPortalVideo.style.display = 'block';
     ownerPortal.classList.add('has-video');
     ownerPortalVideo.play().catch(()=>{});
@@ -959,7 +1047,7 @@
       '<div class="admin-row-top"><span class="mono">OWNER PORTAL</span><span class="tag live">profile</span></div>' +
       '<div class="admin-uploads"><label class="up-btn" data-role="owner-video-label">Owner 4K Video<input type="file" accept="video/*,.mp4,.webm,.mov,.m4v,.ogv" data-role="owner-video"></label></div>' +
       '<div class="admin-thumbs"><div class="thumb"><span class="mono" style="display:grid;place-items:center;height:100%;font-size:9px;text-align:center">' +
-      (ownerVideoFile ? 'VIDEO SAVED<br>' + esc(ownerVideoFile.name || '4K VIDEO') : 'NO VIDEO') +
+      (ownerVideoFile ? 'READY TO PUBLISH<br>' + esc(ownerVideoFile.name || '4K VIDEO') : (ownerVideoUrl ? 'VIDEO PUBLISHED' : 'NO VIDEO')) +
       '</span></div></div>' +
       '<button class="admin-clear" data-role="owner-clear">Clear Owner video</button>';
     adminList.appendChild(ownerRow);
@@ -1073,6 +1161,7 @@
     const t = e.target;
     if (t.getAttribute('data-role') === 'owner-clear'){
       ownerVideoFile = null;
+      ownerVideoUrl = null;
       renderOwnerPortalVideo();
       renderAdmin();
       markUnsaved();
@@ -1089,15 +1178,19 @@
 
   adminSave.addEventListener('click', async ()=>{
     adminSave.disabled = true;
-    adminStatus.textContent = 'Saving to this browser…';
+    adminStatus.textContent = 'Publishing for everyone…';
     adminStatus.classList.remove('saved');
     try{
-      await saveSeasons();
-      adminStatus.textContent = 'Saved on this browser';
+      await publishToCloud();
+      adminStatus.textContent = 'Published — everyone can see these changes';
       adminStatus.classList.add('saved');
     } catch (error){
       console.error(error);
-      adminStatus.textContent = 'Could not save. Try a smaller video or free browser storage.';
+      if (error && error.code === 'OWNER_LINK_SENT'){
+        adminStatus.textContent = 'Owner sign-in link sent to ' + OWNER_EMAIL + ' — open the email, then select Save Changes again.';
+      } else {
+        adminStatus.textContent = 'Could not publish: ' + (error.message || 'check the file size and try again');
+      }
     } finally {
       adminSave.disabled = false;
     }
