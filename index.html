@@ -450,7 +450,6 @@
     </div>
   </aside>
 
-<script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script>
 (async function(){
   "use strict";
@@ -551,9 +550,66 @@
   const SUPABASE_URL = 'https://gxjadrzfordmhkhmonns.supabase.co';
   const SUPABASE_KEY = 'sb_publishable_09OanYPKw-TLk6qL13hPsg_Xavus4pm';
   const OWNER_EMAIL = 'tty213589@gmail.com';
-  const cloud = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
-    auth:{persistSession:true,detectSessionInUrl:true,autoRefreshToken:true}
-  });
+  const AUTH_KEY = 'lucent-owner-session';
+  function decodeJwt(token){
+    try{return JSON.parse(decodeURIComponent(escape(atob(token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')))));}catch(error){return {};}
+  }
+  function readAuthSession(){
+    const hash = new URLSearchParams(location.hash.replace(/^#/,''));
+    const accessToken = hash.get('access_token');
+    if (accessToken){
+      const session = {access_token:accessToken,refresh_token:hash.get('refresh_token')||'',user:{email:decodeJwt(accessToken).email||''}};
+      localStorage.setItem(AUTH_KEY,JSON.stringify(session));
+      history.replaceState(null,'',location.pathname+location.search);
+      return session;
+    }
+    try{
+      const saved = JSON.parse(localStorage.getItem(AUTH_KEY)||'null');
+      if (saved && saved.access_token && decodeJwt(saved.access_token).exp*1000>Date.now()) return saved;
+    }catch(error){}
+    localStorage.removeItem(AUTH_KEY);
+    return null;
+  }
+  let authSession = readAuthSession();
+  function cloudHeaders(withAuth){
+    const headers = {apikey:SUPABASE_KEY};
+    if (withAuth && authSession) headers.Authorization='Bearer '+authSession.access_token;
+    return headers;
+  }
+  const cloud = {
+    auth:{
+      async getSession(){authSession=readAuthSession();return {data:{session:authSession}};},
+      async signInWithOtp({email,options}){
+        const response=await fetch(SUPABASE_URL+'/auth/v1/otp',{method:'POST',headers:{...cloudHeaders(false),'Content-Type':'application/json'},body:JSON.stringify({email,options})});
+        return response.ok?{error:null}:{error:new Error((await response.json().catch(()=>({}))).msg||'Could not send owner sign-in link')};
+      }
+    },
+    from(table){
+      return {
+        select(){
+          return {eq(column,value){return {async maybeSingle(){
+            const url=SUPABASE_URL+'/rest/v1/'+table+'?'+encodeURIComponent(column)+'=eq.'+encodeURIComponent(value)+'&select=data';
+            const response=await fetch(url,{headers:cloudHeaders(false)});
+            const body=await response.json().catch(()=>[]);
+            if(!response.ok)return {data:null,error:new Error(body.message||'Could not load published content')};
+            return {data:body[0]||null,error:null};
+          }}}};
+        },
+        async upsert(record){
+          const response=await fetch(SUPABASE_URL+'/rest/v1/'+table+'?on_conflict=id',{method:'POST',headers:{...cloudHeaders(true),'Content-Type':'application/json',Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify(record)});
+          return response.ok?{error:null}:{error:new Error((await response.json().catch(()=>({}))).message||'Could not publish website changes')};
+        }
+      };
+    },
+    storage:{from(bucket){return {
+      async upload(path,blob,options){
+        const safePath=path.split('/').map(encodeURIComponent).join('/');
+        const response=await fetch(SUPABASE_URL+'/storage/v1/object/'+bucket+'/'+safePath,{method:'POST',headers:{...cloudHeaders(true),'x-upsert':options&&options.upsert?'true':'false','Content-Type':(options&&options.contentType)||'application/octet-stream'},body:blob});
+        return response.ok?{error:null}:{error:new Error((await response.json().catch(()=>({}))).message||'Could not upload media')};
+      },
+      getPublicUrl(path){return {data:{publicUrl:SUPABASE_URL+'/storage/v1/object/public/'+bucket+'/'+path.split('/').map(encodeURIComponent).join('/')}};}
+    }}}
+  };
   const DB_NAME = 'lucent-admin';
   const DB_STORE = 'website';
 
