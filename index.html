@@ -181,11 +181,51 @@
   .facet-label{ font-size:10px; letter-spacing:0.16em; text-transform:uppercase; color:var(--brass); margin-bottom:6px; }
   .facet-val{font-size:15px; color:var(--parchment-dim); line-height:1.5;}
   .detail-visual{ position:relative; border:1px solid var(--line); background:radial-gradient(circle at 50% 30%, rgba(243,208,137,0.10), transparent 60%), var(--moss-800); border-radius:2px; aspect-ratio:4/5; display:flex; align-items:center; justify-content:center; overflow:hidden; }
-  .detail-visual img{ height:88%; width:auto; filter:drop-shadow(0 30px 40px rgba(0,0,0,0.5)); transition:transform 0.6s var(--ease); }
-  .detail-visual:hover img{transform:translateY(-10px);}
-  .detail-visual .corner{ position:absolute; width:22px; height:22px; border:1px solid var(--brass-dim); }
+  .detail-visual .corner{ position:absolute; width:22px; height:22px; border:1px solid var(--brass-dim); transition:all .45s var(--ease); }
   .detail-visual .corner.tl{top:16px; left:16px; border-right:none; border-bottom:none;}
   .detail-visual .corner.br{bottom:16px; right:16px; border-left:none; border-top:none;}
+  .owner-portal{
+    color:var(--parchment); text-decoration:none; isolation:isolate;
+    background:
+      linear-gradient(rgba(17,30,20,.72),rgba(10,12,8,.92)),
+      repeating-linear-gradient(90deg,transparent 0 48px,rgba(201,154,74,.045) 49px 50px),
+      repeating-linear-gradient(0deg,transparent 0 48px,rgba(201,154,74,.045) 49px 50px),
+      var(--moss-800);
+    transition:border-color .45s var(--ease), transform .45s var(--ease), box-shadow .45s var(--ease);
+  }
+  .owner-portal::before{
+    content:''; position:absolute; width:58%; aspect-ratio:1; border:1px solid var(--brass-dim);
+    border-radius:50%; box-shadow:0 0 0 34px rgba(201,154,74,.035),0 0 0 68px rgba(201,154,74,.02);
+    animation:ownerPulse 5s ease-in-out infinite; z-index:-1;
+  }
+  .owner-portal::after{
+    content:''; position:absolute; inset:-40%; z-index:-1;
+    background:conic-gradient(from 90deg,transparent,rgba(243,208,137,.13),transparent 28%);
+    animation:ownerScan 9s linear infinite;
+  }
+  .owner-portal:hover,.owner-portal:focus-visible{
+    border-color:var(--halo); transform:translateY(-7px);
+    box-shadow:0 28px 70px rgba(0,0,0,.38),0 0 45px rgba(201,154,74,.12);
+  }
+  .owner-portal:hover .corner,.owner-portal:focus-visible .corner{width:42px;height:42px;border-color:var(--halo);}
+  .owner-portal:focus-visible{outline:2px solid var(--halo);outline-offset:5px;}
+  .owner-portal-content{padding:clamp(32px,6vw,74px); text-align:center; display:grid; justify-items:center; gap:22px;}
+  .owner-signal{font-family:'Share Tech Mono',monospace; color:var(--brass); letter-spacing:.28em; font-size:11px; text-transform:uppercase;}
+  .owner-monogram{
+    width:112px;height:112px;border:1px solid var(--brass);border-radius:50%;display:grid;place-items:center;
+    font-family:'Orbitron',sans-serif;font-size:38px;font-weight:700;color:var(--halo);
+    box-shadow:inset 0 0 28px rgba(201,154,74,.11),0 0 35px rgba(201,154,74,.12);
+  }
+  .owner-portal h3{font-family:'Orbitron',sans-serif;font-size:clamp(28px,4vw,48px);line-height:1.08;text-transform:uppercase;letter-spacing:.06em;}
+  .owner-portal p{max-width:32ch;color:var(--parchment-dim);line-height:1.7;font-size:16px;}
+  .owner-enter{
+    margin-top:8px;border:1px solid var(--brass);padding:12px 18px;color:var(--halo);
+    font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:.18em;text-transform:uppercase;
+    transition:background .3s,color .3s;
+  }
+  .owner-portal:hover .owner-enter{background:var(--brass);color:var(--ink);}
+  @keyframes ownerPulse{50%{transform:scale(1.06);opacity:.68;}}
+  @keyframes ownerScan{to{transform:rotate(360deg);}}
 
   /* ---------- TIMELINE ---------- */
   .timeline{ position:relative; z-index:10; background:var(--moss-900); padding:0 clamp(24px,7vw,96px) 140px; }
@@ -348,10 +388,16 @@
           <div class="facet"><div class="facet-label">Edition</div><div class="facet-val">Season 01 of 08 — retired when Season 02 arrives</div></div>
         </div>
       </div>
-      <div class="detail-visual">
+      <a class="detail-visual owner-portal" href="owner.html" aria-label="Open the LUCENT Owner Profile">
         <span class="corner tl"></span><span class="corner br"></span>
-        <img id="detailImg" alt="LUCENT Sanctuary case, detail view">
-      </div>
+        <div class="owner-portal-content">
+          <span class="owner-signal">Identity node · 001</span>
+          <span class="owner-monogram" aria-hidden="true">LO</span>
+          <h3>Meet the<br>Owner</h3>
+          <p>Enter the story behind LUCENT — the vision, design language, and mind shaping every season.</p>
+          <span class="owner-enter">Open Owner Profile →</span>
+        </div>
+      </a>
     </div>
   </section>
 
@@ -545,7 +591,7 @@
 
   await loadSavedSeasons();
 
-  if (seasons[0].product && !(seasons[0].productType || '').startsWith('video')) detailImg.src = seasons[0].product;
+  if (detailImg && seasons[0].product && !(seasons[0].productType || '').startsWith('video')) detailImg.src = seasons[0].product;
 
   // ---------- Dots ----------
   function buildDots(){
@@ -929,7 +975,7 @@
         seasons[i].product = media;
         seasons[i].productType = file.type || 'image/*';
         seasons[i].status = 'live';
-        if (i===0 && !file.type.startsWith('video/')) detailImg.src = media;
+        if (detailImg && i===0 && !file.type.startsWith('video/')) detailImg.src = media;
       } finally {
         label.classList.remove('busy'); label.firstChild.textContent = 'Product / Video ';
       }
