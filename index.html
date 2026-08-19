@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>LUCENT — Season 01: Sanctuary</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,500&family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800&family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <style>
   :root{
     --ink:#0a0c08;
@@ -26,13 +26,14 @@
   body{
     background:var(--ink);
     color:var(--parchment);
-    font-family:'Space Grotesk', sans-serif;
+    font-family:'Rajdhani', sans-serif;
+    font-weight:500; letter-spacing:0.015em;
     overflow-x:hidden;
     -webkit-font-smoothing:antialiased;
   }
   ::selection{background:var(--brass); color:var(--ink);}
-  .display{font-family:'Cormorant Garamond', serif;}
-  .mono{font-family:'JetBrains Mono', monospace; letter-spacing:0.06em;}
+  .display{font-family:'Orbitron', sans-serif; letter-spacing:0.035em;}
+  .mono{font-family:'Share Tech Mono', monospace; letter-spacing:0.09em; font-variant-numeric:tabular-nums;}
   button{font-family:inherit; cursor:pointer;}
   input{font-family:inherit;}
 
@@ -47,8 +48,9 @@
   .nav *{pointer-events:auto;}
   .nav-mark{
     display:flex; align-items:center; gap:10px;
-    font-family:'Cormorant Garamond', serif;
-    font-size:22px; letter-spacing:0.08em; font-weight:600;
+    font-family:'Orbitron', sans-serif;
+    font-size:22px; letter-spacing:0.14em; font-weight:700;
+    text-shadow:0 0 18px rgba(243,208,137,0.28);
   }
   .nav-mark svg{width:20px; height:20px; opacity:0.9;}
   .nav-right{display:flex; align-items:center; gap:18px;}
@@ -122,11 +124,19 @@
     opacity:1; transition:opacity 0.9s var(--ease), transform 0.9s var(--ease);
   }
   .eyebrow{
-    font-size:11px; letter-spacing:0.32em; text-transform:uppercase;
+    font-family:'Share Tech Mono', monospace;
+    font-size:11px; letter-spacing:0.38em; text-transform:uppercase;
     color:var(--halo); margin-bottom:18px; display:block;
   }
-  .hero-title{ font-size:clamp(44px, 8.4vw, 108px); line-height:0.96; font-weight:500; letter-spacing:-0.01em; }
-  .hero-title em{ font-style:italic; color:var(--halo); }
+  .hero-title{
+    font-size:clamp(40px, 7.7vw, 100px); line-height:1.02; font-weight:700;
+    letter-spacing:0.035em; text-transform:uppercase;
+    text-shadow:0 0 22px rgba(243,208,137,0.18), 0 8px 36px rgba(0,0,0,0.65);
+  }
+  .hero-title em{
+    font-style:normal; color:var(--halo); font-weight:800;
+    text-shadow:0 0 15px rgba(243,208,137,0.38), 0 0 42px rgba(201,154,74,0.24);
+  }
 
   .stage-product-stage{
     position:relative; z-index:5; height:min(72vh,720px); width:100%;
@@ -162,7 +172,7 @@
   .detail{ position:relative; z-index:10; background:var(--moss-900); padding:130px clamp(24px,7vw,96px) 110px; }
   .detail::before{ content:''; position:absolute; top:0; left:0; right:0; height:160px; background:linear-gradient(to bottom, var(--ink), transparent); pointer-events:none; }
   .detail-grid{ display:grid; grid-template-columns:0.9fr 1.1fr; gap:clamp(40px,6vw,110px); max-width:1280px; margin:0 auto; align-items:start; }
-  .detail-index{ font-family:'JetBrains Mono',monospace; font-size:13px; color:var(--brass); letter-spacing:0.1em; display:flex; align-items:center; gap:14px; margin-bottom:28px; }
+  .detail-index{ font-family:'Share Tech Mono',monospace; font-size:13px; color:var(--brass); letter-spacing:0.1em; display:flex; align-items:center; gap:14px; margin-bottom:28px; }
   .detail-index .dash{width:34px; height:1px; background:var(--brass);}
   .detail-name{ font-size:clamp(38px,4.4vw,64px); line-height:1.02; font-weight:500; margin-bottom:24px; }
   .detail-desc{ color:var(--parchment-dim); font-size:16px; line-height:1.75; max-width:46ch; margin-bottom:36px; }
@@ -180,7 +190,7 @@
   /* ---------- TIMELINE ---------- */
   .timeline{ position:relative; z-index:10; background:var(--moss-900); padding:0 clamp(24px,7vw,96px) 140px; }
   .timeline-head{ max-width:1280px; margin:0 auto 46px; display:flex; align-items:flex-end; justify-content:space-between; gap:20px; flex-wrap:wrap; border-top:1px solid var(--line); padding-top:56px; }
-  .timeline-head h2{ font-family:'Cormorant Garamond',serif; font-weight:500; font-size:clamp(28px,3vw,40px); }
+  .timeline-head h2{ font-family:'Orbitron',serif; font-weight:500; font-size:clamp(28px,3vw,40px); }
   .timeline-head p{ color:var(--parchment-dim); font-size:14px; max-width:36ch; line-height:1.6; }
   .timeline-track{ max-width:1280px; margin:0 auto; display:grid; grid-template-columns:repeat(8,1fr); gap:10px; }
   .tnode{
@@ -194,7 +204,7 @@
   .tnode.current{ box-shadow:0 0 0 1px var(--halo) inset; }
   .tnode .tn-thumb{ position:absolute; inset:0; background-size:cover; background-position:center; opacity:0.22; }
   .tnode .tn-top{ position:relative; z-index:1; display:flex; justify-content:space-between; align-items:flex-start; }
-  .tnode .tn-num{ font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--brass); }
+  .tnode .tn-num{ font-family:'Share Tech Mono',monospace; font-size:12px; color:var(--brass); }
   .tnode.locked .tn-num{ color:var(--parchment-dim); }
   .tnode .tn-status{ position:relative; z-index:1; font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:var(--parchment-dim); }
   .tnode.live .tn-status{ color:var(--halo); }
