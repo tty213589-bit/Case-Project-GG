@@ -63,26 +63,49 @@ footer{border-top:1px solid var(--line);padding:28px clamp(22px,5vw,78px);displa
 <section class="signature"><p>Identity transmission complete</p><h2>Build what people cannot forget.</h2><a class="cta" href="index.html">Explore LUCENT Season 01 →</a></section>
 </main>
 <footer><span>LUCENT — Owner Vision</span><span>Future protocol · 001</span></footer>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 (function(){
+  const SUPABASE_URL='https://gxjadrzfordmhkhmonns.supabase.co';
+  const SUPABASE_KEY='sb_publishable_09OanYPKw-TLk6qL13hPsg_Xavus4pm';
+  const cloud=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
   const video=document.getElementById('ownerBannerVideo');
   const fallback=document.getElementById('heroFallback');
   const sound=document.getElementById('soundToggle');
   let objectUrl=null;
+
+  function showFilm(source){
+    if(!source)return false;
+    video.src=source;
+    video.style.display='block';
+    fallback.style.display='none';
+    video.play().catch(()=>{});
+    return true;
+  }
+
   function openDb(){return new Promise((resolve,reject)=>{const request=indexedDB.open('lucent-admin',1);request.onupgradeneeded=()=>request.result.createObjectStore('website');request.onsuccess=()=>resolve(request.result);request.onerror=()=>reject(request.error);});}
-  async function loadOwnerFilm(){
+
+  async function loadLocalFilm(){
     try{
       const db=await openDb();
       const file=await new Promise((resolve,reject)=>{const request=db.transaction('website').objectStore('website').get('ownerPortalVideo');request.onsuccess=()=>resolve(request.result);request.onerror=()=>reject(request.error);});
       db.close();
       if(!(file instanceof Blob))return;
       objectUrl=URL.createObjectURL(file);
-      video.src=objectUrl;
-      video.style.display='block';
-      fallback.style.display='none';
-      video.play().catch(()=>{});
-    }catch(error){console.warn('Owner film could not be loaded.',error);}
+      showFilm(objectUrl);
+    }catch(error){console.warn('Local Owner film could not be loaded.',error);}
   }
+
+  async function loadOwnerFilm(){
+    try{
+      const {data,error}=await cloud.from('site_config').select('data').eq('id','lucent-main').maybeSingle();
+      if(error)throw error;
+      const url=data&&data.data&&data.data.ownerVideoUrl;
+      if(showFilm(url))return;
+    }catch(error){console.warn('Published Owner film could not be loaded.',error);}
+    await loadLocalFilm();
+  }
+
   sound.addEventListener('click',()=>{
     if(!video.src)return;
     video.muted=!video.muted;
