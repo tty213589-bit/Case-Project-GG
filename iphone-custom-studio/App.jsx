@@ -12,31 +12,31 @@ import {
    ============================================================ */
 const THEME = {
   dark: {
-    bg: "#0F0B1F",
-    bg2: "#161029",
-    panel: "rgba(255,255,255,0.045)",
-    panelSolid: "#1B1533",
-    border: "rgba(255,255,255,0.09)",
-    text: "#F5F3FF",
-    muted: "#A79BC7",
-    faint: "#6E6390",
+    bg: "#000000",
+    bg2: "#111111",
+    panel: "rgba(255,255,255,0.08)",
+    panelSolid: "#1c1c1e",
+    border: "rgba(255,255,255,0.14)",
+    text: "#f5f5f7",
+    muted: "#a1a1a6",
+    faint: "#6e6e73",
   },
   light: {
-    bg: "#F6F3FF",
-    bg2: "#EFEAFB",
-    panel: "rgba(20,10,40,0.035)",
+    bg: "#f5f5f7",
+    bg2: "#ffffff",
+    panel: "#ffffff",
     panelSolid: "#FFFFFF",
-    border: "rgba(20,10,50,0.08)",
-    text: "#1B1533",
-    muted: "#6E6390",
-    faint: "#9C8FC0",
+    border: "rgba(0,0,0,0.09)",
+    text: "#1d1d1f",
+    muted: "#6e6e73",
+    faint: "#86868b",
   },
 };
 const ACCENTS = {
-  coral: "#FF4F79",
-  lime: "#B6FF3C",
-  cyan: "#35E8D0",
-  amber: "#FFC93C",
+  coral: "#0071e3",
+  lime: "#34c759",
+  cyan: "#5ac8fa",
+  amber: "#ff9f0a",
 };
 const FONTS_CSS = `
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
@@ -77,6 +77,57 @@ const FONTS_CSS = `
 
 .hero-cta { transition: transform .22s cubic-bezier(.16,1,.3,1), box-shadow .22s ease; }
 .hero-cta:hover { transform: translateY(-3px) scale(1.02); box-shadow: 0 18px 44px -12px ${ACCENTS.coral}88; }
+
+.apple-nav { display:flex; align-items:center; gap:24px; }
+.apple-nav button {
+  appearance:none; border:0; background:transparent; color:inherit; padding:8px 0;
+  font:500 12px/1 -apple-system,BlinkMacSystemFont,'SF Pro Text','Helvetica Neue',sans-serif;
+  cursor:pointer; opacity:.82;
+}
+.apple-nav button:hover { color:${ACCENTS.coral}; opacity:1; }
+.store-promo {
+  margin:-24px -22px 28px; padding:12px 20px; text-align:center;
+  font-size:13px; line-height:1.45; color:#1d1d1f; background:#fff;
+  border-bottom:1px solid rgba(0,0,0,.07);
+}
+.store-promo a { color:${ACCENTS.coral}; font-weight:600; }
+.apple-product-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:18px; margin-top:24px; }
+.apple-product-card {
+  min-height:270px; border-radius:30px; padding:28px; text-align:left; position:relative; overflow:hidden;
+  background:#fff; color:#1d1d1f; box-shadow:0 18px 50px rgba(0,0,0,.07);
+  border:1px solid rgba(0,0,0,.055); cursor:pointer; transition:transform .35s cubic-bezier(.2,.8,.2,1),box-shadow .35s ease;
+}
+.apple-product-card:hover { transform:translateY(-6px); box-shadow:0 28px 68px rgba(0,0,0,.11); }
+.apple-product-card.dark-card { background:#000; color:#f5f5f7; }
+.apple-product-card.blue-card { background:linear-gradient(145deg,#eaf5ff,#fff 64%); }
+.apple-card-kicker { color:#bf4800; font-size:11px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; }
+.apple-card-title { font-size:clamp(25px,2.3vw,34px); line-height:1.04; letter-spacing:-.035em; font-weight:700; margin:8px 0; }
+.apple-card-copy { color:#6e6e73; font-size:14px; line-height:1.5; max-width:28ch; }
+.dark-card .apple-card-copy { color:#a1a1a6; }
+.apple-card-link { color:${ACCENTS.coral}; font-size:14px; font-weight:600; margin-top:18px; display:inline-flex; align-items:center; gap:5px; }
+.apple-card-orb {
+  position:absolute; width:150px; height:150px; border-radius:50%; right:-30px; bottom:-35px;
+  background:radial-gradient(circle at 35% 30%,#fff 0 4%,#8fd3ff 28%,#0071e3 68%,#003d80);
+  box-shadow:0 22px 52px rgba(0,113,227,.28);
+}
+.apple-category-strip { display:flex; gap:12px; overflow-x:auto; padding:8px 2px 20px; margin-top:24px; scroll-snap-type:x mandatory; }
+.apple-category-pill {
+  flex:0 0 auto; min-width:150px; border-radius:22px; padding:18px; background:#fff; color:#1d1d1f;
+  border:1px solid rgba(0,0,0,.06); text-align:left; scroll-snap-align:start; box-shadow:0 10px 30px rgba(0,0,0,.05);
+}
+.apple-category-pill b { display:block; font-size:15px; margin-top:14px; }
+.apple-category-pill span { color:#6e6e73; font-size:12px; }
+
+@media (max-width: 900px) {
+  .apple-nav { display:none; }
+  .apple-product-grid { grid-template-columns:1fr; }
+  .apple-product-card { min-height:230px; }
+}
+@media (max-width: 620px) {
+  .store-promo { margin:-24px -22px 20px; font-size:12px; }
+  .apple-product-card { border-radius:24px; padding:23px; }
+  .apple-category-pill { min-width:132px; }
+}
 
 @media (prefers-reduced-motion: reduce) {
   .step-anim, .float-slow, .hero-glow, .logo-sheen, .fade-up, .picker-card, .btn-primary-x, .btn-ghost-x, .icon-btn-x, .hero-cta { animation: none !important; transition: none !important; }
@@ -363,7 +414,7 @@ function AccessorySVG({ shape, color }) {
    ============================================================ */
 export default function App() {
   const saved = useMemo(() => loadState(), []);
-  const [dark, setDark] = useState(saved?.dark ?? true);
+  const [dark, setDark] = useState(saved?.dark ?? false);
   const [soundOn, setSoundOn] = useState(saved?.soundOn ?? true);
   const play = useSFX(soundOn);
   const t = dark ? THEME.dark : THEME.light;
@@ -667,50 +718,49 @@ export default function App() {
      ============================================================ */
   const S = {
     root: {
-      background: `radial-gradient(1200px 800px at 15% -10%, ${t.bg2}, ${t.bg} 55%)`,
-      color: t.text, minHeight: "100%", fontFamily: "'Inter', sans-serif",
+      background: t.bg,
+      color: t.text, minHeight: "100%", fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif",
       display: "flex", flexDirection: "column",
     },
     header: {
       display: "flex", alignItems: "center", justifyContent: "space-between",
-      padding: "14px 22px", borderBottom: `1px solid ${t.border}`,
+      padding: "12px max(22px, calc((100vw - 1180px)/2))", borderBottom: `1px solid ${t.border}`,
       position: "sticky", top: 0, zIndex: 40, backdropFilter: "blur(14px)",
-      background: dark ? "rgba(15,11,31,0.7)" : "rgba(246,243,255,0.75)",
+      background: dark ? "rgba(0,0,0,.82)" : "rgba(255,255,255,.82)",
     },
     logo: {
-      fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 18,
-      background: `linear-gradient(90deg, ${ACCENTS.coral}, ${ACCENTS.amber} 30%, ${ACCENTS.cyan} 60%, ${ACCENTS.coral})`,
-      WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent", letterSpacing: -0.3,
+      fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif", fontWeight: 650, fontSize: 20,
+      color: t.text, letterSpacing: -0.5,
       cursor: "pointer",
     },
     iconBtn: (active) => ({
       display: "flex", alignItems: "center", justifyContent: "center",
-      width: 38, height: 38, borderRadius: 12, border: `1px solid ${t.border}`,
-      background: active ? ACCENTS.coral : t.panel, color: active ? "#1a0812" : t.text,
+      width: 38, height: 38, borderRadius: 999, border: `1px solid ${t.border}`,
+      background: active ? ACCENTS.coral : "transparent", color: active ? "#fff" : t.text,
       cursor: "pointer",
     }),
-    steps: { display: "flex", gap: 4, alignItems: "center", fontFamily: "'JetBrains Mono', monospace", fontSize: 11 },
+    steps: { display: "flex", gap: 4, alignItems: "center", fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif", fontSize: 11 },
     stepDot: (activeStep, n) => ({
       display: "flex", alignItems: "center", gap: 6,
       color: n === activeStep ? t.text : n < activeStep ? ACCENTS.lime : t.faint,
       opacity: n <= activeStep || n < activeStep ? 1 : 0.5,
     }),
-    main: { flex: 1, padding: "22px", maxWidth: 1180, margin: "0 auto", width: "100%" },
+    main: { flex: 1, padding: "24px 22px 42px", maxWidth: 1220, margin: "0 auto", width: "100%" },
     card: {
-      background: t.panel, border: `1px solid ${t.border}`, borderRadius: 18, padding: 16,
-      backdropFilter: "blur(10px)",
+      background: t.panel, border: `1px solid ${t.border}`, borderRadius: 28, padding: 20,
+      boxShadow: dark ? "0 18px 55px rgba(0,0,0,.22)" : "0 18px 55px rgba(0,0,0,.06)",
     },
     grid: { display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(150px,1fr))", gap: 14 },
     input: {
-      background: t.panelSolid, border: `1px solid ${t.border}`, borderRadius: 10,
-      padding: "9px 12px", color: t.text, fontSize: 13, outline: "none", width: "100%",
-      fontFamily: "'Inter', sans-serif",
+      background: t.panelSolid, border: `1px solid ${t.border}`, borderRadius: 12,
+      padding: "11px 13px", color: t.text, fontSize: 14, outline: "none", width: "100%",
+      fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif",
     },
     btnPrimary: {
       display: "inline-flex", alignItems: "center", gap: 8, padding: "11px 20px", borderRadius: 999,
-      background: `linear-gradient(90deg, ${ACCENTS.coral}, ${ACCENTS.amber})`,
-      color: "#1a0812", fontWeight: 700, fontSize: 14, border: "none", cursor: "pointer",
-      fontFamily: "'Space Grotesk', sans-serif",
+      background: ACCENTS.coral,
+      color: "#fff", fontWeight: 600, fontSize: 14, border: "none", cursor: "pointer",
+      fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif",
     },
     btnGhost: {
       display: "inline-flex", alignItems: "center", gap: 8, padding: "10px 18px", borderRadius: 999,
@@ -729,6 +779,12 @@ export default function App() {
       <div style={S.header}>
         <div style={{ display: "flex", alignItems: "center", gap: 22 }}>
           <div className="logo-sheen" style={S.logo} onClick={() => setStep(0)}>iPhone Custom Studio</div>
+          <nav className="apple-nav" aria-label="Store navigation">
+            <button onClick={() => setStep(0)}>Store</button>
+            <button onClick={() => setStep(1)}>iPhone</button>
+            <button onClick={() => setStep(selectedModelId ? 2 : 1)}>Accessories</button>
+            <button onClick={() => setStep(0)}>Support</button>
+          </nav>
           <div style={{ ...S.steps, display: (step === 0 || window.innerWidth < 760) ? "none" : "flex" }}>
             {[1, 2, 3, 4].map(n => (
               <div key={n} style={{ display: "flex", alignItems: "center" }}>
@@ -757,7 +813,7 @@ export default function App() {
             <Settings size={16} />
           </button>
           <button className="icon-btn-x" style={{ ...S.iconBtn(bagOpen), position: "relative", width: "auto", padding: "0 12px", gap: 6 }} onClick={() => setBagOpen(true)}>
-            <ShoppingBag size={16} /> <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 12 }}>{bag.length}</span>
+            <ShoppingBag size={16} /> <span style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif", fontSize: 12 }}>{bag.length}</span>
           </button>
         </div>
       </div>
@@ -849,12 +905,12 @@ export default function App() {
                 <div style={{ fontSize: 13, fontWeight: 600 }}>{a.name}</div>
                 <div style={{ fontSize: 11, color: t.muted }}>{a.category}</div>
               </div>
-              <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 13 }}>${a.price}</div>
+              <div style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif", fontSize: 13 }}>${a.price}</div>
               <button onClick={() => toggleBag(a.id)} style={{ background: "none", border: "none", color: t.faint, cursor: "pointer" }}><X size={16} /></button>
             </div>
           ))}
           {bagAccessories.length > 0 && (
-            <div style={{ marginTop: 14, display: "flex", justifyContent: "space-between", fontFamily: "'JetBrains Mono', monospace" }}>
+            <div style={{ marginTop: 14, display: "flex", justifyContent: "space-between", fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif" }}>
               <span>Subtotal</span><span>${subtotal}</span>
             </div>
           )}
@@ -884,54 +940,58 @@ export default function App() {
 function Hero({ t, dark, models, onStart }) {
   const showcase = models.slice(24, 28); // the 17 lineup
   return (
-    <div style={{ padding: "6vh 0 4vh", textAlign: "center", position: "relative", overflow: "hidden" }}>
+    <>
+    <div className="store-promo">
+      Get a personalized iPhone and accessory setup. Free design preview and expert help. <a>Learn more ›</a>
+    </div>
+    <div style={{
+      padding: "clamp(42px,7vh,82px) 24px 48px", textAlign: "center", position: "relative", overflow: "hidden",
+      borderRadius: 34, background: dark ? "#050505" : "#ffffff", boxShadow: dark ? "none" : "0 20px 70px rgba(0,0,0,.06)"
+    }}>
       <div className="hero-glow" style={{
         position: "absolute", top: "-10%", left: "50%", width: 620, height: 620, marginLeft: -310,
-        background: `radial-gradient(circle, ${ACCENTS.coral}30, ${ACCENTS.cyan}18 45%, transparent 72%)`,
-        filter: "blur(10px)", pointerEvents: "none", zIndex: 0,
+        background: `radial-gradient(circle, ${ACCENTS.cyan}35, ${ACCENTS.coral}14 45%, transparent 72%)`,
+        filter: "blur(18px)", pointerEvents: "none", zIndex: 0,
       }} />
       <div style={{ position: "relative", zIndex: 1 }}>
         <div className="fade-up" style={{
-          display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 14px", borderRadius: 999,
-          border: `1px solid ${t.border}`, background: t.panel, fontSize: 11.5, color: t.muted,
-          fontFamily: "'JetBrains Mono', monospace", marginBottom: 22, letterSpacing: 0.5,
+          display: "inline-flex", alignItems: "center", gap: 6, padding: "0", borderRadius: 999,
+          border: "none", background: "transparent", fontSize: 12, color: "#bf4800",
+          fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif", marginBottom: 18, letterSpacing: .6,
+          fontWeight: 700,
         }}>
-          <Sparkles size={12} color={ACCENTS.amber} /> DESIGN YOUR OWN, IN REAL TIME
+          NEW · IPHONE CUSTOM STUDIO
         </div>
 
         <h1 className="fade-up" style={{
-          fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, letterSpacing: -1.5,
-          fontSize: "clamp(34px, 6vw, 68px)", lineHeight: 1.04, margin: "0 0 16px", animationDelay: ".05s",
+          fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif", fontWeight: 750, letterSpacing: "-.045em",
+          fontSize: "clamp(42px, 7vw, 84px)", lineHeight: .98, margin: "0 0 20px", animationDelay: ".05s",
         }}>
-          Your iPhone.<br />
-          <span style={{
-            background: `linear-gradient(90deg, ${ACCENTS.coral}, ${ACCENTS.amber} 45%, ${ACCENTS.cyan})`,
-            WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent",
-          }}>Styled by you.</span>
+          The iPhone experience.<br />
+          <span style={{ color: t.muted }}>Designed around you.</span>
         </h1>
 
         <p className="fade-up" style={{
           color: t.muted, fontSize: 16, maxWidth: 480, margin: "0 auto 34px", lineHeight: 1.55, animationDelay: ".1s",
         }}>
-          Pick your exact model, drop on cases, charms, straps and grips, then drag,
-          resize and recolor until it's unmistakably yours — all before you buy a thing.
+          Shop iPhone, cases, MagSafe essentials, charms and more. Build your complete look in real time before you buy.
         </p>
 
         <button className="hero-cta fade-up" onClick={onStart} style={{
           display: "inline-flex", alignItems: "center", gap: 10, padding: "16px 30px", borderRadius: 999,
-          background: `linear-gradient(90deg, ${ACCENTS.coral}, ${ACCENTS.amber})`, color: "#1a0812",
-          fontWeight: 700, fontSize: 15.5, border: "none", cursor: "pointer",
-          fontFamily: "'Space Grotesk', sans-serif", boxShadow: `0 14px 34px -12px ${ACCENTS.coral}66`,
+          background: ACCENTS.coral, color: "#fff",
+          fontWeight: 600, fontSize: 15.5, border: "none", cursor: "pointer",
+          fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif", boxShadow: `0 14px 34px -12px ${ACCENTS.coral}66`,
           animationDelay: ".16s",
         }}>
-          Start Customizing <ArrowRight size={17} />
+          Shop &amp; Customize <ArrowRight size={17} />
         </button>
 
         <div className="fade-up" style={{
           display: "flex", justifyContent: "center", gap: 28, marginTop: 20, fontSize: 11.5,
-          color: t.faint, fontFamily: "'JetBrains Mono', monospace", animationDelay: ".2s",
+          color: t.faint, fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif", animationDelay: ".2s",
         }}>
-          <span>{models.length} MODELS</span>
+          <span>{models.length} IPHONE MODELS</span>
           <span>·</span>
           <span>13 ACCESSORY CATEGORIES</span>
           <span>·</span>
@@ -952,6 +1012,48 @@ function Hero({ t, dark, models, onStart }) {
         </div>
       </div>
     </div>
+    <section style={{ padding: "48px 0 8px" }}>
+      <div style={{ textAlign: "left", marginBottom: 22 }}>
+        <div style={{ color: "#bf4800", fontSize: 12, fontWeight: 700, letterSpacing: ".08em" }}>THE LATEST</div>
+        <h2 style={{ margin: "7px 0 0", fontSize: "clamp(34px,4.4vw,56px)", lineHeight: 1, letterSpacing: "-.045em" }}>
+          Shop iPhone and accessories.
+        </h2>
+      </div>
+      <div className="apple-product-grid">
+        <article className="apple-product-card blue-card" onClick={onStart}>
+          <div className="apple-card-kicker">New</div>
+          <div className="apple-card-title">Choose your iPhone.</div>
+          <div className="apple-card-copy">Compare every model from iPhone X through the latest iPhone 17 lineup.</div>
+          <div className="apple-card-link">Shop iPhone <ArrowRight size={15}/></div>
+          <div className="apple-card-orb"/>
+        </article>
+        <article className="apple-product-card dark-card" onClick={onStart}>
+          <div className="apple-card-kicker" style={{ color: "#ff9f0a" }}>Personalize it</div>
+          <div className="apple-card-title">Cases made to match.</div>
+          <div className="apple-card-copy">Try colors, clear cases, camera covers and MagSafe accessories instantly.</div>
+          <div className="apple-card-link">Explore cases <ArrowRight size={15}/></div>
+          <div style={{ position:"absolute",right:24,bottom:18,width:80,height:164,border:"8px solid #5ac8fa",borderRadius:22,opacity:.9 }}/>
+        </article>
+        <article className="apple-product-card" onClick={onStart}>
+          <div className="apple-card-kicker">Made for you</div>
+          <div className="apple-card-title">Finish every detail.</div>
+          <div className="apple-card-copy">Add straps, charms, grips, wallets, stands, rings and decorative gems.</div>
+          <div className="apple-card-link">Shop accessories <ArrowRight size={15}/></div>
+          <Sparkles size={84} color={ACCENTS.amber} style={{ position:"absolute",right:24,bottom:20,opacity:.9 }}/>
+        </article>
+      </div>
+      <div className="apple-category-strip" aria-label="Accessory categories">
+        {[
+          ["Phone Cases","Protect in style"],["MagSafe","Snap on essentials"],["Camera","Protect every lens"],
+          ["Straps & Charms","Carry it your way"],["Grips & Stands","Hold and view"],["Wallets","Keep cards close"]
+        ].map(([name,copy]) => (
+          <button key={name} className="apple-category-pill" onClick={onStart}>
+            <span>{copy}</span><b>{name}</b><span style={{ color:ACCENTS.coral }}>Shop ›</span>
+          </button>
+        ))}
+      </div>
+    </section>
+    </>
   );
 }
 
@@ -961,7 +1063,7 @@ function Hero({ t, dark, models, onStart }) {
 function StepChooseModel({ S, t, models, selectedModelId, onChoose, search, setSearch }) {
   return (
     <div>
-      <h1 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 26, marginBottom: 4 }}>Choose your iPhone</h1>
+      <h1 style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif", fontSize: 26, marginBottom: 4 }}>Choose your iPhone</h1>
       <p style={{ color: t.muted, fontSize: 13, marginBottom: 18 }}>Pick your exact model — every camera layout is fitted precisely.</p>
       <div style={{ position: "relative", marginBottom: 18, maxWidth: 340 }}>
         <Search size={15} style={{ position: "absolute", left: 12, top: 11, color: t.faint }} />
@@ -991,7 +1093,7 @@ function StepAccessories({ S, t, accessories, bag, toggleBag, search, setSearch,
   const cats = ["All", ...CATEGORIES];
   return (
     <div>
-      <h1 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 26, marginBottom: 4 }}>Choose accessories</h1>
+      <h1 style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif", fontSize: 26, marginBottom: 4 }}>Choose accessories</h1>
       <p style={{ color: t.muted, fontSize: 13, marginBottom: 16 }}>
         Building for <strong style={{ color: t.text }}>{selectedModel?.name || "your iPhone"}</strong>. Add anything you like — you'll style it next.
       </p>
@@ -1019,7 +1121,7 @@ function StepAccessories({ S, t, accessories, bag, toggleBag, search, setSearch,
               <div style={{ fontSize: 12.5, fontWeight: 600 }}>{a.name}</div>
               <div style={{ fontSize: 10.5, color: t.muted, marginBottom: 8 }}>{a.category}</div>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 13 }}>${a.price}</span>
+                <span style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif", fontSize: 13 }}>${a.price}</span>
                 <button onClick={() => toggleBag(a.id)} style={{
                   fontSize: 11, fontWeight: 700, padding: "6px 10px", borderRadius: 999, cursor: "pointer",
                   border: "none", background: inBag ? ACCENTS.lime : ACCENTS.coral, color: "#140b06",
@@ -1061,7 +1163,7 @@ function StepCustomize(props) {
       <div style={{ display: "grid", gridTemplateColumns: "220px 1fr 240px", gap: 18, alignItems: "start" }} className="studio-grid">
         {/* LAYERS PANEL */}
         <div style={{ ...S.card, order: 1 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 10, fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, fontSize: 13 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 10, fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif", fontWeight: 600, fontSize: 13 }}>
             <LayersIcon size={14} /> Layers
           </div>
           {[...sorted].reverse().map((p, i) => {
@@ -1141,7 +1243,7 @@ function StepCustomize(props) {
 
         {/* CONTROLS PANEL */}
         <div style={{ ...S.card, order: 3 }}>
-          <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, fontSize: 13, marginBottom: 10 }}>
+          <div style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif", fontWeight: 600, fontSize: 13, marginBottom: 10 }}>
             {selectedAcc ? selectedAcc.name : "Select an item"}
           </div>
           {selected ? (
@@ -1198,7 +1300,7 @@ function StyleGauge({ score, t }) {
         <circle cx="45" cy="45" r={r} fill="none" stroke={t.border} strokeWidth="8" />
         <circle cx="45" cy="45" r={r} fill="none" stroke={ACCENTS.lime} strokeWidth="8" strokeLinecap="round"
           strokeDasharray={c} strokeDashoffset={offset} transform="rotate(-90 45 45)" />
-        <text x="45" y="50" textAnchor="middle" fontSize="18" fontFamily="'JetBrains Mono', monospace" fill={t.text} fontWeight="700">{score}</text>
+        <text x="45" y="50" textAnchor="middle" fontSize="18" fontFamily="-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif" fill={t.text} fontWeight="700">{score}</text>
       </svg>
       <div style={{ fontSize: 10, color: t.muted, letterSpacing: 1 }}>STYLE SCORE</div>
     </div>
@@ -1215,7 +1317,7 @@ function StepPreview({ S, t, selectedModel, placed, accessories, bagAccessories,
     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 28 }} className="preview-grid">
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", position: "relative" }}>
         {showCelebrate && (
-          <div style={{ position: "absolute", top: -30, fontSize: 13, color: ACCENTS.lime, fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700 }}>
+          <div style={{ position: "absolute", top: -30, fontSize: 13, color: ACCENTS.lime, fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif", fontWeight: 700 }}>
             ✦ Perfect Match! ✦
           </div>
         )}
@@ -1236,15 +1338,15 @@ function StepPreview({ S, t, selectedModel, placed, accessories, bagAccessories,
         </div>
       </div>
       <div>
-        <h1 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 24, marginBottom: 2 }}>{selectedModel?.name}</h1>
+        <h1 style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif", fontSize: 24, marginBottom: 2 }}>{selectedModel?.name}</h1>
         <p style={{ color: t.muted, fontSize: 13, marginBottom: 16 }}>Your finished design</p>
         <div style={{ marginBottom: 16 }}>
           {bagAccessories.map(a => (
             <div key={a.id} style={{ display: "flex", justifyContent: "space-between", padding: "8px 0", borderBottom: `1px solid ${t.border}`, fontSize: 13 }}>
-              <span>{a.name}</span><span style={{ fontFamily: "'JetBrains Mono', monospace" }}>${a.price}</span>
+              <span>{a.name}</span><span style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif" }}>${a.price}</span>
             </div>
           ))}
-          <div style={{ display: "flex", justifyContent: "space-between", padding: "10px 0", fontWeight: 700, fontFamily: "'JetBrains Mono', monospace" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", padding: "10px 0", fontWeight: 700, fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif" }}>
             <span>Total</span><span>${subtotal}</span>
           </div>
         </div>
@@ -1272,7 +1374,7 @@ function Drawer({ onClose, title, children, t, dark, wide }) {
         padding: 20, overflowY: "auto",
       }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
-          <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 16 }}>{title}</div>
+          <div style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif", fontWeight: 700, fontSize: 16 }}>{title}</div>
           <button onClick={onClose} style={{ background: "none", border: "none", color: t.muted, cursor: "pointer" }}><X size={18} /></button>
         </div>
         {children}
