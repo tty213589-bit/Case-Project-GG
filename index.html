@@ -324,6 +324,52 @@
     .timeline-track{grid-template-columns:repeat(4,1fr); row-gap:10px;}
     .stage-product-stage{height:min(52vh,480px);}
   }
+
+  /* Persistent next-season navigator */
+  .next-season-card{
+    position:absolute;right:clamp(22px,4.5vw,76px);bottom:clamp(34px,6vh,72px);z-index:14;
+    width:min(390px,calc(100vw - 44px));min-height:96px;padding:0;
+    display:grid;grid-template-columns:minmax(0,1fr) 78px;align-items:stretch;
+    color:var(--parchment);background:rgba(8,24,17,.82);
+    border:1px solid rgba(193,145,40,.62);border-radius:2px;
+    box-shadow:0 24px 70px rgba(0,0,0,.38),inset 0 1px 0 rgba(255,255,255,.05);
+    backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+    cursor:pointer;overflow:hidden;text-align:left;
+    transition:transform .35s var(--ease),border-color .35s ease,box-shadow .35s ease;
+  }
+  .next-season-card::before{
+    content:"";position:absolute;inset:0;pointer-events:none;
+    background:linear-gradient(110deg,rgba(193,145,40,.12),transparent 42%);
+  }
+  .next-season-card:hover{transform:translateY(-5px);border-color:var(--brass);box-shadow:0 30px 86px rgba(0,0,0,.46),0 0 32px rgba(193,145,40,.13);}
+  .next-season-card:focus-visible{outline:2px solid var(--brass);outline-offset:4px;}
+  .next-season-copy{position:relative;padding:13px 16px 13px 14px;display:flex;flex-direction:column;justify-content:center;min-width:0;}
+  .next-season-kicker{margin:0 0 7px 68px;color:var(--brass);font-size:8px;letter-spacing:.26em;text-transform:uppercase;white-space:nowrap;}
+  .next-season-main{display:grid;grid-template-columns:56px minmax(0,1fr);gap:13px;align-items:center;min-width:0;}
+  .next-season-thumb{
+    width:56px;height:56px;display:grid;place-items:center;overflow:hidden;
+    color:var(--brass);background-color:rgba(193,145,40,.08);
+    background-size:cover;background-position:center;border:1px solid rgba(239,232,210,.42);
+    font:600 16px/1 var(--display);letter-spacing:.08em;
+  }
+  .next-season-thumb.has-image span{opacity:0;}
+  .next-season-name{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:17px;letter-spacing:.025em;}
+  .next-season-arrow{
+    position:relative;display:grid;place-items:center;color:#102218;background:var(--parchment);
+    clip-path:polygon(0 0,72% 0,100% 50%,72% 100%,0 100%,16% 50%);
+  }
+  .next-season-arrow svg{width:22px;height:22px;margin-left:7px;transition:transform .35s var(--ease);}
+  .next-season-card:hover .next-season-arrow svg{transform:translateX(5px);}
+  @media(max-width:720px){
+    .next-season-card{right:16px;bottom:22px;width:min(330px,calc(100vw - 32px));min-height:78px;grid-template-columns:minmax(0,1fr) 62px;}
+    .next-season-copy{padding:10px 12px 10px 11px;}
+    .next-season-kicker{margin:0 0 5px 54px;font-size:7px;}
+    .next-season-main{grid-template-columns:44px minmax(0,1fr);gap:10px;}
+    .next-season-thumb{width:44px;height:44px;font-size:13px;}
+    .next-season-name{font-size:14px;}
+    .next-season-arrow svg{width:18px;height:18px;}
+  }
+
   @media (prefers-reduced-motion: reduce){
     *{animation-duration:0.01ms !important; animation-iteration-count:1 !important; transition-duration:0.01ms !important; scroll-behavior:auto !important;}
   }
@@ -378,6 +424,19 @@
 
     <div class="stage-progress"><div class="stage-progress-track"><div class="stage-progress-bar" id="progressBar"></div></div></div>
     <div class="stage-dots" id="stageDots"></div>
+
+    <button class="next-season-card" id="nextSeasonCard" type="button" aria-label="View next season">
+      <span class="next-season-copy">
+        <span class="next-season-kicker mono">Next Season · <span id="nextSeasonNumber">02</span></span>
+        <span class="next-season-main">
+          <span class="next-season-thumb" id="nextSeasonThumb" aria-hidden="true"><span id="nextSeasonThumbLabel">02</span></span>
+          <span class="next-season-name display" id="nextSeasonName">Uncharted</span>
+        </span>
+      </span>
+      <span class="next-season-arrow" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M5 12h13M13 7l5 5-5 5"/></svg>
+      </span>
+    </button>
   </section>
 
   <!-- ================= SEASON DETAIL ================= -->
@@ -527,6 +586,11 @@
   const ownerPortal = document.getElementById('ownerPortal');
   const ownerPortalVideo = document.getElementById('ownerPortalVideo');
   const heroStage = document.getElementById('heroStage');
+  const nextSeasonCard = document.getElementById('nextSeasonCard');
+  const nextSeasonNumber = document.getElementById('nextSeasonNumber');
+  const nextSeasonThumb = document.getElementById('nextSeasonThumb');
+  const nextSeasonThumbLabel = document.getElementById('nextSeasonThumbLabel');
+  const nextSeasonName = document.getElementById('nextSeasonName');
 
   const adminToggle = document.getElementById('adminToggle');
   const adminOverlay = document.getElementById('adminOverlay');
@@ -793,6 +857,22 @@
     navName.textContent = s.status==='live' && s.name ? s.name : 'Uncharted';
     navBarFill.style.width = ((activeIndex+1)/8*100) + '%';
     footTag.textContent = 'SEASON ' + pad(s.n) + (s.name ? ' · ' + s.name.toUpperCase() : '');
+    renderNextSeasonCard();
+  }
+  function renderNextSeasonCard(){
+    const nextIndex = (activeIndex + 1) % seasons.length;
+    const next = seasons[nextIndex];
+    const number = pad(next.n);
+    const name = next.name || 'Uncharted';
+    const productIsImage = !!(next.product && !(next.productType || '').startsWith('video'));
+    const backgroundIsImage = !!(next.bg && !(next.bgType || '').startsWith('video'));
+    const thumb = productIsImage ? next.product : (backgroundIsImage ? next.bg : '');
+    nextSeasonNumber.textContent = number;
+    nextSeasonThumbLabel.textContent = number;
+    nextSeasonName.textContent = name;
+    nextSeasonCard.setAttribute('aria-label', 'View Season ' + number + ': ' + name);
+    nextSeasonThumb.style.backgroundImage = thumb ? 'url("' + String(thumb).replace(/"/g, '%22') + '")' : '';
+    nextSeasonThumb.classList.toggle('has-image', !!thumb);
   }
   function resetProgress(){
     progressBar.style.transition = 'none';
@@ -956,6 +1036,9 @@
     pauseAuto();
     goToSeason(i).then(scheduleNext);
   }
+  nextSeasonCard.addEventListener('click', ()=>{
+    userJump((activeIndex + 1) % seasons.length);
+  });
 
   // Autoplay runs unattended — no hover-to-pause on the hero itself
   // (it fills the viewport, so that would freeze the loop for most cursor positions).
@@ -1261,4 +1344,5 @@
 </script>
 </body>
 </html>
+
 
