@@ -119,23 +119,26 @@
     filter:blur(2px); z-index:1; pointer-events:none;
   }
   .stage-copy{
-    position:absolute; z-index:6; left:0; right:0; top:11%;
-    text-align:center; padding:0 24px;
+    position:absolute; z-index:6; left:clamp(24px,5vw,78px); right:auto; top:22%;
+    width:min(390px,35vw); text-align:left; padding:20px 22px;
+    border-left:1px solid rgba(201,154,74,.62);
+    background:linear-gradient(90deg,rgba(7,15,10,.52),rgba(7,15,10,0));
     opacity:1; transition:opacity 0.9s var(--ease), transform 0.9s var(--ease);
   }
   .eyebrow{
     font-family:'Share Tech Mono', monospace;
-    font-size:11px; letter-spacing:0.38em; text-transform:uppercase;
-    color:var(--halo); margin-bottom:18px; display:block;
+    font-size:10px; letter-spacing:0.3em; text-transform:uppercase;
+    color:var(--halo); margin-bottom:14px; display:block;
   }
   .hero-title{
-    font-size:clamp(40px, 7.7vw, 100px); line-height:1.02; font-weight:700;
-    letter-spacing:0.035em; text-transform:uppercase;
-    text-shadow:0 0 22px rgba(243,208,137,0.18), 0 8px 36px rgba(0,0,0,0.65);
+    font-family:'Share Tech Mono',monospace;
+    font-size:clamp(30px,4.2vw,62px); line-height:.95; font-weight:400;
+    letter-spacing:.025em; text-transform:uppercase;
+    text-shadow:0 8px 28px rgba(0,0,0,.78);
   }
   .hero-title em{
-    font-style:normal; color:var(--halo); font-weight:800;
-    text-shadow:0 0 15px rgba(243,208,137,0.38), 0 0 42px rgba(201,154,74,0.24);
+    font-style:normal; color:var(--halo); font-weight:400;
+    text-shadow:0 0 18px rgba(243,208,137,.28),0 8px 28px rgba(0,0,0,.78);
   }
 
   .stage-product-stage{
@@ -361,6 +364,9 @@
   .next-season-arrow svg{width:22px;height:22px;margin-left:7px;transition:transform .35s var(--ease);}
   .next-season-card:hover .next-season-arrow svg{transform:translateX(5px);}
   @media(max-width:720px){
+    .stage-copy{left:18px;top:16%;width:min(260px,64vw);padding:14px 14px;}
+    .eyebrow{font-size:8px;letter-spacing:.22em;margin-bottom:10px;}
+    .hero-title{font-size:clamp(24px,8vw,38px);line-height:1;}
     .next-season-card{right:16px;bottom:22px;width:min(330px,calc(100vw - 32px));min-height:78px;grid-template-columns:minmax(0,1fr) 62px;}
     .next-season-copy{padding:10px 12px 10px 11px;}
     .next-season-kicker{margin:0 0 5px 54px;font-size:7px;}
@@ -1344,5 +1350,6 @@
 </script>
 </body>
 </html>
+
 
 
