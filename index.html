@@ -579,7 +579,7 @@
     <p class="admin-note">
       Upload a product cutout and a background for any season slot — the banner picks it up immediately and folds it into the loop.
       Renders on a plain black background are auto-matted (background stripped) on upload.
-      Changes preview immediately. Select <strong>Save Changes</strong> to publish names, images, backgrounds, product videos, and the Owner Portal 4K video for every visitor. Owner authentication is required before publishing.
+      Changes preview immediately. Select <strong>Save &amp; Publish</strong> to publish names, images, backgrounds, product videos, and the Owner Portal 4K video for every visitor. Your one-time owner sign-in is remembered on this browser, so future saves publish immediately.
     </p>
     <div class="admin-list" id="adminList"></div>
     <div class="admin-actions">
@@ -697,24 +697,57 @@
   const SUPABASE_KEY = 'sb_publishable_09OanYPKw-TLk6qL13hPsg_Xavus4pm';
   const OWNER_EMAIL = 'tty213589@gmail.com';
   const AUTH_KEY = 'lucent-owner-session';
+  const AUTH_REFRESH_MARGIN_MS = 60 * 1000;
   function decodeJwt(token){
     try{return JSON.parse(decodeURIComponent(escape(atob(token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')))));}catch(error){return {};}
+  }
+  function normalizeAuthSession(session){
+    if (!session || !session.access_token) return null;
+    const jwt = decodeJwt(session.access_token);
+    session.user = session.user || {};
+    session.user.email = session.user.email || jwt.email || '';
+    return session;
+  }
+  function saveAuthSession(session){
+    const normalized = normalizeAuthSession(session);
+    if (normalized) localStorage.setItem(AUTH_KEY,JSON.stringify(normalized));
+    return normalized;
   }
   function readAuthSession(){
     const hash = new URLSearchParams(location.hash.replace(/^#/,''));
     const accessToken = hash.get('access_token');
     if (accessToken){
-      const session = {access_token:accessToken,refresh_token:hash.get('refresh_token')||'',user:{email:decodeJwt(accessToken).email||''}};
-      localStorage.setItem(AUTH_KEY,JSON.stringify(session));
+      const session = saveAuthSession({
+        access_token:accessToken,
+        refresh_token:hash.get('refresh_token')||'',
+        user:{email:decodeJwt(accessToken).email||''}
+      });
       history.replaceState(null,'',location.pathname+location.search);
       return session;
     }
     try{
-      const saved = JSON.parse(localStorage.getItem(AUTH_KEY)||'null');
-      if (saved && saved.access_token && decodeJwt(saved.access_token).exp*1000>Date.now()) return saved;
+      const saved = normalizeAuthSession(JSON.parse(localStorage.getItem(AUTH_KEY)||'null'));
+      if (saved) return saved;
     }catch(error){}
-    localStorage.removeItem(AUTH_KEY);
     return null;
+  }
+  function authTokenIsFresh(session){
+    const expiresAt = Number(decodeJwt(session && session.access_token || '').exp || 0) * 1000;
+    return expiresAt > Date.now() + AUTH_REFRESH_MARGIN_MS;
+  }
+  async function refreshAuthSession(session){
+    if (!session || !session.refresh_token) return null;
+    const response = await fetch(SUPABASE_URL+'/auth/v1/token?grant_type=refresh_token',{
+      method:'POST',
+      headers:{apikey:SUPABASE_KEY,'Content-Type':'application/json'},
+      body:JSON.stringify({refresh_token:session.refresh_token})
+    });
+    const body = await response.json().catch(()=>({}));
+    if (!response.ok){
+      if (response.status === 400 || response.status === 401) localStorage.removeItem(AUTH_KEY);
+      throw new Error(body.msg || body.message || 'Could not refresh owner session');
+    }
+    return saveAuthSession(body);
   }
   let authSession = readAuthSession();
   function cloudHeaders(withAuth){
@@ -724,7 +757,18 @@
   }
   const cloud = {
     auth:{
-      async getSession(){authSession=readAuthSession();return {data:{session:authSession}};},
+      async getSession(){
+        authSession = readAuthSession();
+        if (authSession && !authTokenIsFresh(authSession)){
+          try{
+            authSession = await refreshAuthSession(authSession);
+          } catch(error){
+            console.warn('Owner session could not be refreshed.',error);
+            authSession = null;
+          }
+        }
+        return {data:{session:authSession}};
+      },
       async signInWithOtp({email,options}){
         const response=await fetch(SUPABASE_URL+'/auth/v1/otp',{method:'POST',headers:{...cloudHeaders(false),'Content-Type':'application/json'},body:JSON.stringify({email,options})});
         return response.ok?{error:null}:{error:new Error((await response.json().catch(()=>({}))).msg||'Could not send owner sign-in link')};
@@ -1408,7 +1452,7 @@
     } catch (error){
       console.error(error);
       if (error && error.code === 'OWNER_LINK_SENT'){
-        adminStatus.textContent = 'Owner sign-in link sent to ' + OWNER_EMAIL + ' — open the email, then select Save Changes again.';
+        adminStatus.textContent = 'One-time owner sign-in link sent to ' + OWNER_EMAIL + ' — open it once, then future Save & Publish actions will be automatic on this browser.';
       } else {
         adminStatus.textContent = 'Could not publish: ' + (error.message || 'check the file size and try again');
       }
