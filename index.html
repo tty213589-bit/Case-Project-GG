@@ -196,11 +196,6 @@
       var(--moss-800);
     transition:border-color .45s var(--ease), transform .45s var(--ease), box-shadow .45s var(--ease);
   }
-  .owner-portal::before{
-    content:''; position:absolute; width:58%; aspect-ratio:1; border:1px solid var(--brass-dim);
-    border-radius:50%; box-shadow:0 0 0 34px rgba(201,154,74,.035),0 0 0 68px rgba(201,154,74,.02);
-    animation:ownerPulse 5s ease-in-out infinite; z-index:-1;
-  }
   .owner-portal::after{
     content:''; position:absolute; inset:-40%; z-index:-1;
     background:conic-gradient(from 90deg,transparent,rgba(243,208,137,.13),transparent 28%);
@@ -240,7 +235,6 @@
     transition:background .3s,color .3s;
   }
   .owner-portal:hover .owner-enter{background:var(--brass);color:var(--ink);}
-  @keyframes ownerPulse{50%{transform:scale(1.06);opacity:.68;}}
   @keyframes ownerScan{to{transform:rotate(360deg);}}
 
   /* ---------- TIMELINE ---------- */
@@ -1557,7 +1551,6 @@
 </script>
 </body>
 </html>
-
 
 
 
