@@ -579,7 +579,7 @@
     <p class="admin-note">
       Upload a product cutout and a background for any season slot — the banner picks it up immediately and folds it into the loop.
       Renders on a plain black background are auto-matted (background stripped) on upload.
-      Changes preview immediately. Select <strong>Save &amp; Publish</strong> to publish names, images, backgrounds, product videos, and the Owner Portal 4K video for every visitor. Your one-time owner sign-in is remembered on this browser, so future saves publish immediately.
+      Changes preview immediately. Select <strong>Save &amp; Publish</strong> to publish names, images, backgrounds, product videos, and the Owner Portal 4K video for every visitor. Your draft is saved before publishing. Owner sign-in is requested only once and is remembered on this browser.
     </p>
     <div class="admin-list" id="adminList"></div>
     <div class="admin-actions">
@@ -697,7 +697,15 @@
   const SUPABASE_KEY = 'sb_publishable_09OanYPKw-TLk6qL13hPsg_Xavus4pm';
   const OWNER_EMAIL = 'tty213589@gmail.com';
   const AUTH_KEY = 'lucent-owner-session';
+  const AUTH_REQUEST_KEY = 'lucent-owner-link-request-until';
   const AUTH_REFRESH_MARGIN_MS = 60 * 1000;
+  const AUTH_REQUEST_COOLDOWN_MS = 60 * 60 * 1000;
+  function ownerReturnUrl(){
+    const url = new URL(location.href);
+    url.hash = '';
+    url.search = '';
+    return url.href;
+  }
   function decodeJwt(token){
     try{return JSON.parse(decodeURIComponent(escape(atob(token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')))));}catch(error){return {};}
   }
@@ -722,6 +730,7 @@
         refresh_token:hash.get('refresh_token')||'',
         user:{email:decodeJwt(accessToken).email||''}
       });
+      localStorage.removeItem(AUTH_REQUEST_KEY);
       history.replaceState(null,'',location.pathname+location.search);
       return session;
     }
@@ -747,6 +756,7 @@
       if (response.status === 400 || response.status === 401) localStorage.removeItem(AUTH_KEY);
       throw new Error(body.msg || body.message || 'Could not refresh owner session');
     }
+    localStorage.removeItem(AUTH_REQUEST_KEY);
     return saveAuthSession(body);
   }
   let authSession = readAuthSession();
@@ -770,8 +780,19 @@
         return {data:{session:authSession}};
       },
       async signInWithOtp({email,options}){
-        const response=await fetch(SUPABASE_URL+'/auth/v1/otp',{method:'POST',headers:{...cloudHeaders(false),'Content-Type':'application/json'},body:JSON.stringify({email,options})});
-        return response.ok?{error:null}:{error:new Error((await response.json().catch(()=>({}))).msg||'Could not send owner sign-in link')};
+        const redirectTo = options && options.emailRedirectTo ? options.emailRedirectTo : ownerReturnUrl();
+        const response=await fetch(SUPABASE_URL+'/auth/v1/otp?redirect_to='+encodeURIComponent(redirectTo),{
+          method:'POST',
+          headers:{...cloudHeaders(false),'Content-Type':'application/json'},
+          body:JSON.stringify({email,create_user:false})
+        });
+        if (response.ok) return {error:null};
+        const body = await response.json().catch(()=>({}));
+        const error = new Error(body.msg || body.message || 'Could not send owner sign-in link');
+        error.status = response.status;
+        error.code = body.error_code || body.code || 'OWNER_LINK_ERROR';
+        error.retryAfter = response.headers.get('Retry-After') || '';
+        return {error};
       }
     },
     from(table){
@@ -812,22 +833,26 @@
     });
   }
 
+  async function readAdminValue(key){
+    const db = await openAdminDb();
+    try{
+      return await new Promise((resolve,reject)=>{
+        const request = db.transaction(DB_STORE).objectStore(DB_STORE).get(key);
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+      });
+    } finally {
+      db.close();
+    }
+  }
+
   async function loadLocalBackup(){
     try{
-      const db = await openAdminDb();
-      const store = db.transaction(DB_STORE).objectStore(DB_STORE);
-      const saved = await new Promise((resolve,reject)=>{
-        const request = store.get('seasons');
-        request.onsuccess = () => resolve(request.result);
-        request.onerror = () => reject(request.error);
-      });
-      const savedOwnerVideo = await new Promise((resolve,reject)=>{
-        const request = db.transaction(DB_STORE).objectStore(DB_STORE).get('ownerPortalVideo');
-        request.onsuccess = () => resolve(request.result);
-        request.onerror = () => reject(request.error);
-      });
-      db.close();
+      const saved = await readAdminValue('seasons');
+      const savedOwnerVideo = await readAdminValue('ownerPortalVideo');
+      const savedOwnerVideoUrl = await readAdminValue('ownerPortalVideoUrl');
       ownerVideoFile = savedOwnerVideo instanceof Blob ? savedOwnerVideo : null;
+      ownerVideoUrl = typeof savedOwnerVideoUrl === 'string' && savedOwnerVideoUrl ? savedOwnerVideoUrl : null;
       if (Array.isArray(saved) && saved.length === seasons.length){
         saved.forEach((season,i)=> seasons[i] = Object.assign({n:i+1,name:'',status:'locked',product:null,productType:'image',bg:null,bgType:'image'},season));
       }
@@ -836,13 +861,15 @@
     }
   }
 
-  async function saveLocalBackup(){
+  async function saveLocalBackup(pendingPublish){
     const db = await openAdminDb();
     await new Promise((resolve,reject)=>{
       const transaction = db.transaction(DB_STORE,'readwrite');
       const store = transaction.objectStore(DB_STORE);
       store.put(seasons,'seasons');
       store.put(ownerVideoFile,'ownerPortalVideo');
+      store.put(ownerVideoUrl,'ownerPortalVideoUrl');
+      store.put(pendingPublish === true,'pendingPublish');
       transaction.oncomplete = resolve;
       transaction.onerror = () => reject(transaction.error);
       transaction.onabort = () => reject(transaction.error);
@@ -852,28 +879,56 @@
 
   async function loadSavedSeasons(){
     try{
+      if (await readAdminValue('pendingPublish') === true){
+        await loadLocalBackup();
+        return true;
+      }
+    } catch(error){
+      console.warn('Pending LUCENT draft could not be checked.',error);
+    }
+    try{
       const {data,error} = await cloud.from('site_config').select('data').eq('id','lucent-main').maybeSingle();
       if (error) throw error;
       const published = data && data.data;
       if (published && Array.isArray(published.seasons) && published.seasons.length === seasons.length){
         published.seasons.forEach((season,i)=> seasons[i] = Object.assign({n:i+1,name:'',status:'locked',product:null,productType:'image',bg:null,bgType:'image'},season));
         ownerVideoUrl = published.ownerVideoUrl || null;
-        return;
+        ownerVideoFile = null;
+        return false;
       }
     } catch(error){
       console.warn('Published LUCENT content could not be loaded; using local backup.',error);
     }
     await loadLocalBackup();
+    return false;
   }
 
   async function ensureOwnerSession(){
     const {data:{session}} = await cloud.auth.getSession();
     if (session && session.user && session.user.email === OWNER_EMAIL) return session;
+    const requestUntil = Number(localStorage.getItem(AUTH_REQUEST_KEY) || 0);
+    if (requestUntil > Date.now()){
+      const pending = new Error('Owner sign-in already requested');
+      pending.code = 'OWNER_LINK_PENDING';
+      throw pending;
+    }
     const {error} = await cloud.auth.signInWithOtp({
       email:OWNER_EMAIL,
-      options:{emailRedirectTo:location.href.split('#')[0]}
+      options:{emailRedirectTo:ownerReturnUrl()}
     });
-    if (error) throw error;
+    if (error){
+      const rateLimited = error.status === 429 || /rate.?limit/i.test(String(error.code || '')) || /rate.?limit/i.test(error.message || '');
+      if (rateLimited){
+        const retrySeconds = Number(error.retryAfter || 0);
+        const cooldown = Number.isFinite(retrySeconds) && retrySeconds > 0 ? retrySeconds * 1000 : AUTH_REQUEST_COOLDOWN_MS;
+        localStorage.setItem(AUTH_REQUEST_KEY,String(Date.now() + cooldown));
+        const limited = new Error('Owner email is temporarily paused');
+        limited.code = 'OWNER_LINK_RATE_LIMIT';
+        throw limited;
+      }
+      throw error;
+    }
+    localStorage.setItem(AUTH_REQUEST_KEY,String(Date.now() + AUTH_REQUEST_COOLDOWN_MS));
     const sent = new Error('OWNER_LINK_SENT');
     sent.code = 'OWNER_LINK_SENT';
     throw sent;
@@ -916,7 +971,11 @@
     if (error) throw error;
     publishedSeasons.forEach((season,i)=>seasons[i]=season);
     ownerVideoFile = null;
-    await saveLocalBackup();
+    try{
+      await saveLocalBackup(false);
+    } catch(localError){
+      console.warn('Published content could not be copied to the local backup.',localError);
+    }
     renderOwnerPortalVideo();
     renderAdmin();
   }
@@ -942,7 +1001,7 @@
     ownerPortalVideo.play().catch(()=>{});
   }
   function markUnsaved(){
-    adminStatus.textContent = 'Unsaved changes — select Save Changes';
+    adminStatus.textContent = 'Unsaved changes — select Save & Publish';
     adminStatus.classList.remove('saved');
   }
   function showProductMedia(s, animate){
@@ -964,7 +1023,23 @@
     return true;
   }
 
-  await loadSavedSeasons();
+  const pendingPublish = await loadSavedSeasons();
+  if (pendingPublish){
+    const {data:{session}} = await cloud.auth.getSession();
+    if (session && session.user && session.user.email === OWNER_EMAIL){
+      adminStatus.textContent = 'Finishing your saved publish…';
+      try{
+        await publishToCloud();
+        adminStatus.textContent = 'Published — everyone can see these changes';
+        adminStatus.classList.add('saved');
+      } catch(error){
+        console.warn('Saved publish will remain pending.',error);
+        adminStatus.textContent = 'Draft saved — select Save & Publish to try again';
+      }
+    } else {
+      adminStatus.textContent = 'Draft saved — open the latest owner sign-in email to finish publishing';
+    }
+  }
 
   if (detailImg && seasons[0].product && !(seasons[0].productType || '').startsWith('video')) detailImg.src = seasons[0].product;
 
@@ -1443,18 +1518,23 @@
 
   adminSave.addEventListener('click', async ()=>{
     adminSave.disabled = true;
-    adminStatus.textContent = 'Publishing for everyone…';
+    adminStatus.textContent = 'Saving draft, then publishing for everyone…';
     adminStatus.classList.remove('saved');
     try{
+      await saveLocalBackup(true);
       await publishToCloud();
       adminStatus.textContent = 'Published — everyone can see these changes';
       adminStatus.classList.add('saved');
     } catch (error){
       console.error(error);
       if (error && error.code === 'OWNER_LINK_SENT'){
-        adminStatus.textContent = 'One-time owner sign-in link sent to ' + OWNER_EMAIL + ' — open it once, then future Save & Publish actions will be automatic on this browser.';
+        adminStatus.textContent = 'Draft saved. One-time owner sign-in sent to ' + OWNER_EMAIL + ' — open it once and publishing will finish automatically.';
+      } else if (error && error.code === 'OWNER_LINK_PENDING'){
+        adminStatus.textContent = 'Draft saved. Owner sign-in is already requested — open the latest email. No new email was sent.';
+      } else if (error && error.code === 'OWNER_LINK_RATE_LIMIT'){
+        adminStatus.textContent = 'Draft saved safely. Email sending is temporarily paused; no new email was requested. Open the latest owner email, or try again later.';
       } else {
-        adminStatus.textContent = 'Could not publish: ' + (error.message || 'check the file size and try again');
+        adminStatus.textContent = 'Draft saved on this browser. Publish is not finished: ' + (error.message || 'check the file size and try again');
       }
     } finally {
       adminSave.disabled = false;
@@ -1477,7 +1557,6 @@
 </script>
 </body>
 </html>
-
 
 
 
