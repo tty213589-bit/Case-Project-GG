@@ -252,7 +252,10 @@
   .tnode:hover{ transform:translateY(-3px); }
   .tnode.live{ border-color:var(--brass); background:radial-gradient(circle at 30% 20%, rgba(243,208,137,0.14), transparent 70%); }
   .tnode.current{ box-shadow:0 0 0 1px var(--halo) inset; }
-  .tnode .tn-thumb{ position:absolute; inset:0; background-size:cover; background-position:center; opacity:0.22; }
+  .tnode .tn-thumb{
+    position:absolute; inset:8%; background-size:contain; background-repeat:no-repeat;
+    background-position:center; opacity:0.32;
+  }
   .tnode .tn-top{ position:relative; z-index:1; display:flex; justify-content:space-between; align-items:flex-start; }
   .tnode .tn-num{ font-family:'Share Tech Mono',monospace; font-size:14px; color:var(--brass); }
   .tnode.locked .tn-num{ color:var(--parchment-dim); }
@@ -304,7 +307,7 @@
   .up-btn input{ position:absolute; inset:0; opacity:0; cursor:pointer; }
   .up-btn.busy{ color:var(--halo); border-color:var(--halo); }
   .admin-thumbs{ display:flex; gap:8px; margin-bottom:10px; }
-  .thumb{ flex:1; height:56px; border:1px solid var(--line); background-size:cover; background-position:center; background-color:rgba(239,231,212,0.04); border-radius:2px; }
+  .thumb{ flex:1; height:56px; border:1px solid var(--line); background-size:contain; background-repeat:no-repeat; background-position:center; background-color:rgba(239,231,212,0.04); border-radius:2px; }
   .admin-clear{ background:none; border:none; color:var(--danger); font-size:11px; letter-spacing:0.06em; text-transform:uppercase; padding:0; opacity:0.75; }
   .admin-clear:hover{opacity:1;}
   .admin-actions{ padding:14px 22px 18px; border-top:1px solid var(--line); background:var(--moss-900); }
@@ -1551,5 +1554,4 @@
 </script>
 </body>
 </html>
-
 
