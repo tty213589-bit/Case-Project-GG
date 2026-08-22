@@ -1023,6 +1023,8 @@
     return true;
   }
 
+  const lockSvg = '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.1"><rect x="5" y="11" width="14" height="9" rx="1.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>';
+
   // Paint the first published product immediately. Cloud settings continue loading
   // afterward, so a slow configuration request never leaves the hero or menu empty.
   buildDots();
@@ -1260,8 +1262,6 @@
   // (it fills the viewport, so that would freeze the loop for most cursor positions).
 
   // ---------- Timeline ----------
-  const lockSvg = '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.1"><rect x="5" y="11" width="14" height="9" rx="1.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>';
-
   function renderTimeline(){
     timelineTrack.innerHTML = '';
     seasons.forEach((s,i)=>{
